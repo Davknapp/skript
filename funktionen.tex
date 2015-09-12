@@ -1,0 +1,405 @@
+\section{Funktionen}
+Funktionen sind ein grundlegendes und wichtiges Konzept der Programmierung. Sie ermöglichen es, häufig benötigte Programmzeilen als ``Unterprogramm'' zusammenzufassen. An anderen Stellen im gleichen Programm kann man dann durch einen sogenannten \df{Aufruf} der Funktion dorthin verzweigen. In der Funktion selbst kann man durch das °return° - Statement dafür sorgen, dass die Ausführung an der Stelle fortgesetzt wird, an der die Funktion aufgerufen wurde.
+Wie ihre mathematischen Äquivalente können Funktionen Argumente erhalten und einen Rückgabewert besitzen. 
+
+\subsection{Funktionsdefinitionen}
+Eine \df{Funktionsdefinition} hat folgende Form:
+
+\begin{alltt}
+    \ph{RÜCKGABETYP} \ph{FUNKTIONSNAME}(
+        \ph{PARAMETERTYP 1} \ph{PARAMETERNAME 1},
+        \ph{PARAMETERTYP 2} \ph{PARAMETERNAME 2}, 
+        \ldots,
+        \ph{PARAMETERTYP n} \ph{PARAMETERNAME n} ) \{
+      \ph{BEFEHLE}
+    \}
+\end{alltt}
+Der Rückgabetyp ist hierbei ein beliebiger Datentyp - dieser bestimmt, welchen Datentyp der Ausdruck des Funktionsaufrufes hat. Ein \df{Funktionsaufruf} \label{Op:Funktionsaufruf} hat die Syntax:
+
+\begin{alltt}
+    \ph{FUNKTIONSNAME} ( \ph{PARAMETER 1}, \ldots, \ph{PARAMETER n} )
+\end{alltt}
+
+Dies bedeutet, dass eine Funktion ein vom Programmierer neu definierter Operator ist: Sie weist einem oder mehreren Werten einen neuen Wert (den Rückgabewert) zu. 
+
+Bei jedem Funktionsaufruf werden zunächst neue Variablen \ph{°PARAMETERNAME 1°} bis \ph{°PARAMETERNAME n°} erstellt, welche vom in der Funktionsdefinition angegebenen Datentyp sind. Dann werden die Expressions \ph{°PARAMETER 1°} bis \ph{°PARAMETER n°} ausgewertet und den Variablen in der entsprechenden Reihenfolge zugewiesen. Anschließend werden die Befehle in der Funktionsdefinition ausgeführt, bis der Wert berechnet wurde, den der Funktionsaufruf haben soll. Durch das folgende Statement beendet die Funktion sich selbst augenblicklich und legt ihren sogenannten \df{Rückgabewert} fest: Der Wert des Funktionsaufrufes.
+
+\begin{alltt}
+    return \ph{RÜCKGABEWERT};
+\end{alltt}
+
+Die Parameter in der Funktionsdefinition sind Variablendeklarationen, deren Initialisierung durch den Funktionsaufruf statt findet. Sie gehören zum Block der Funktionsdefinition und können (sollten) dort zur Berechnung des Rückgabewerts verwendet werden -- Dennoch kann eine Funktion selbstverständlich zu Beginn weitere, interne Variablen erstellen.
+
+Innerhalb der Funktion sind dies aber insgesamt die \emph{einzigen} Variablen, auf die direkt (mit Namen) zugegriffen werden kann. Wir wollen nun Code für eine Funktionsdefinition vorstellen, welche das Signum einer Ganzzahl ausrechnet (siehe auch \ref{sec:logischeundvergleichsoperatoren}) und diese Funktion dann aufrufen:
+
+\begin{codes}[Funktionsdefinition und -aufruf,label=code:funktionsbeispiel]
+#include <stdio.h>
+
+int sign( int x ) {
+  if (x < 0) return -1;
+  else return (x != 0);
+}
+
+int main() {
+  printf("%i\n", sign(-5));  /* Wird -1 ausgeben. */
+  return 0;
+}
+\end{codes}
+
+Noch ein Beispiel: 
+
+\begin{codes}[Funktion zum Berchnen ganzer Potenzen von Fließkommazahlen]
+#include <stdio.h>
+
+/* berechnet zahl hoch exponent */
+double potenz(double zahl, unsigned int exponent) { 
+  double ergebnis;
+  for (ergebnis = 1.0; exponent; exponent--) 
+    ergebnis *= zahl;
+  return ergebnis;
+}
+
+int main() {
+  printf("%f\n", potenz(0.5, 4) );  /* Wird 0.0625 ausgeben. */
+  return 0;
+}
+\end{codes}
+
+Wir können nun zum ersten mal feststellen, welche genaue Form ausführbarer C-Quellcode hat: Dieser setzt sich nämlich aus Funktionsdefinitionen zusammen, welche wiederum aus Statements bestehen, die bei Aufruf der Funktion in angegebener Reihenfolge ausgeführt werden. Es muss eine Funktion mit dem Namen °main° geben, welche zu Beginn des Programms gestartet wird.
+
+\label{bisschenvoid} Wir lernen an dieser Stelle noch einen neuen Datentyp kennen, den Datentyp °void°. Man kann keine °void°-Variablen deklarieren, denn eine Expression mit Datentyp °void° hat \emph{keinen} Wert. Allerdings gibt es Funktionen mit \emph{Rückgabetyp} °void°, welche man auch als Prozeduren bezeichnet. Eine Prozedur muss kein return-Statement enthalten, kann jedoch das leere return-Statement °return;° verwenden, um sich selbst zu beenden. 
+
+\begin{codes}[Beispiel für eine Prozedur,label=code:prozedurbeispiel]
+#include <stdio.h>
+
+void printInt(int x) { 
+  printf("%i\n",x); 
+}
+
+int main() {
+  printInt(42); /* gebe 42 auf der Kommandozeile aus */
+  return 0;
+}
+\end{codes}
+
+\subsection{Funktionsdeklaration vs. Funktionsdefinition}
+
+Möchte man eine Funktion aufrufen, so muss die Definition dieser Funktion im Quellcode vor dem Funktionsaufruf liegen, da der Compiler die aufzurufende Funktion bereits ``kennen'' muss, damit er einen Aufruf korrekt in Maschinencode übersetzen kann: Dazu muss er wenigstens wissen, wie genau die Funktionsargumente und der Rückgabetyp aussehen. Man kann diese Informationen jedoch angeben, bevor man die Funktion tatsächlich definiert, indem man lediglich eine \df{Funktionsdeklaration} verwendet. Dieses Statement sieht wie folgt aus:
+
+\begin{alltt}
+    \ph{RÜCKGABETYP} \ph{FUNKTIONSNAME}(
+        \ph{PARAMETERTYP 1} \ph{\opt{PARAMETERNAME 1}},
+        \ldots,
+        \ph{PARAMETERTYP n} \ph{\opt{PARAMETERNAME n}} );
+\end{alltt}
+
+Die Deklaration enthält also nur den sogenannten \df{Funktionskopf}, in dem alle für den Compiler wichtigen Informationen enthalten sind. Nachdem die Funktion deklariert ist, kann man sie im nachfolgenden Quellcode verwenden. An irgendeiner Stelle muss allerdings dann die tatsächliche Definition stehen. Hier ein Beispiel, welches ohne dieses Sprachkonstrukt gar nicht möglich wäre:
+
+\newpage
+\begin{codes}[Funktionsdeklarationen sind notwendig,label=code:funktionsdeklaration]
+#include <stdio.h>
+
+/* Funktionsdeklarationen */
+int ungerade(int);  /* diese Deklaration ist notwendig. */
+int   gerade(int);  /* diese Deklaration nicht, ist aber huebsch. */
+
+/* Funktionsdefinitionen */
+int gerade(int n) {
+/* testet, ob n gerade ist */
+  if (n == 0) return 1;
+  else return ungerade(n-1); /* wir müssen "ungerade" kennen */
+}
+int ungerade(int n) { /* testet, ob n ungerade ist */
+  if (n == 0) return 0;
+  else return gerade(n-1);
+}
+
+int main() {
+  if ( gerade(5) ) {
+    printf("Verkehrte Welt\n");
+    return 1;
+  } else return 0;
+}
+\end{codes}
+
+Die Umsetzung dieser Funktionen ist natürlich haarsträubend ineffizient, umständlich und unverständlich. Wir konnten jedoch kein Besseres Beispiel für Funktionen finden, die sich auf diese Art und weise gegenseitig aufrufen: Man bezeichnet dies auch als \df{indirekte Rekursion}.
+
+\subsection{Modulares Programmieren und Linken}
+Die Kompilierung von großen Programmen zu schnellem und effizientem Maschinencode bedarf eines deutlich merkbaren Rechenaufwands. Während der Weiterentwicklung oder Fehleranalyse solcher Programme müssen allerdings ständig Teile des Programmcodes verändert werden und es wäre zu zeitaufwändig, das gesamte Programm ständig neu zu kompilieren - insbesondere, da sich ja nur gewisse Teilbereiche des Programms ändern - etwa nur eine bestimmte Funktion. Man geht deswegen dazu über, einzelne Teile eines Programms so voneinander zu trennen, dass der Compiler sie unabhängig voneinander in Maschinencode übersetzen kann. Diese Teile nennt man auch \df{Module}.
+
+Nachdem ein solches Modul kompiliert wurde, ist es natürlich kein lauffähiges Programm - insbesondere verwendet das Modul unter Umständen Funktionen, deren Programmcode sich in anderen Modulen befindet. Um diese Abhängigkeiten aufzulösen, wird in der Schlussphase der Codegenerierung ein Programm (der \df{Linker}) gestartet, um die kompilierten Module zu einem lauffähigen Programm zusammenzufügen. Diesen Vorgang bezeichnet man dementsprechend als \df{Linken}. Ein Modul in C ist zunächst eine Datei mit Dateiendung ``c''. Jede solche °.c°-Datei wird von dem Compiler zu einer sogenannten \df{Objektdatei} kompiliert, welche das kompilierte Modul darstellt. Diese Objektdatei enthält Informationen darüber, welche Funktionen das Modul enthält und welche Funktionen von dem Modul aus anderen Modulen benötigt werden. Sind einmal alle Objektdateien erstellt, löst der Linker die Abhängigkeiten zwischen ihnen auf und fügt die Objektdateien zu einem lauffähigen Programmcode zusammen. Dieser Vorgang ist unabhängig von der Kompilierung.
+
+Bei der Kompilierung ist es jedoch erforderlich, dass Funktionen definiert werden, bevor sie im Quellcode danach verwendet werden. Existiert etwa eine Quellcodedatei °moremath.c°, welche unter anderem eine Funktion
+\begin{codes}
+    unsigned fibonacci(unsigned n)
+\end{codes}
+beinhaltet, so könnte man die folgende °main.c° natürlich trotzdem nicht erfolgreich kompilieren, da zumindest eine Deklaration der Funktion fehlt:
+
+\begin{codes}[Fehlende Deklaration,label=code:fehlendedeklaration]
+#include <stdio.h>
+/* Hier fehlt eine Deklaration oder Ähnliches */
+int main() {
+  unsigned j;
+  for (j=1; j<10; j++) 
+    printf("%u\n", fibonacci(j));
+  return 0;
+}
+\end{codes}
+
+Man mache sich klar, dass dies ein Problem des Compilers und völlig unabhängig vom Linker ist.  Um dieses Problem zu lösen, gehört zu jedem Modul auch eine \df{Headerdatei} mit der Dateiendung ``h'', welche den gleichen Namen wie die Quellcodedatei des Moduls erhält. Diese enthält nur   Funktionsdeklarationen. Im Sinne des obigen Beispiels sähe die Headerdatei °moremath.h° etwa so aus:
+
+\begin{codes}[Header-Datei für das moremath-Modul,label=code:moremathheader]
+unsigned faculty(unsigned n);   /* berechnet n! */
+unsigned fibonacci(unsigned n); /* berechnet die n-te Fibonaccizahl */
+\end{codes}
+
+Also enthält die Headerdatei lediglich Informationen über die Verwendung der Funktionen, die sich im zugehörigen Modul befinden, damit eine Kompilierung mit voneinander getrenntem Code überhaupt erst möglich wird. Mit dieser Datei ist °main.c° in folgender Variante nun kompilierbar:
+
+\newpage
+\begin{codes}[Deklaration fehlt nun nicht mehr,label=code:mitdeklaration]
+#include <stdio.h>
+#include "moremath.h"
+int main() {
+  unsigned j;
+  for (j=1; j<10; j++)
+    printf("%u\n", fibonacci(j));
+  return 0;
+}
+\end{codes}
+
+Die Headerdateien von selbstgeschriebenen Modulen werden durch die °#include° - Anweisung direkt in den Quellcode eingefügt (kopiert) . Die Headerdateien eigener Module werden mit Anführungszeichen angegeben, Headerdateien von Systemmodulen mit spitzen Klammern. In der Tat gibt es bereits im System vorhandene Modul wie etwa °stdio° und °math°, welche sich in ihrer Funktionsweise nicht von selbst erstellten Modulen unterscheiden. Das Modul °moremath.c° könnte nun wie folgt aussehen:
+
+\begin{codes}[Das moremath-Modul,label=code:moremathmodul]
+#include "moremath.h"
+
+unsigned faculty(unsigned n) {
+  unsigned f = 1;
+  for (;n;n--) f *= n;
+  return f;
+}
+
+unsigned fibonacci(unsigned n) {
+  if (n < 2) return 1;
+  else return fibonacci(n-1) + fibonacci(n-2);
+}
+\end{codes}
+
+Die Quellcodedatei bindet für Gewöhnlich ihre zugehörige Headerdatei ein. Dies hat viele Vorteile, die in Zukunft noch klarer werden, doch einen Grund kenne wir bereits: Sollten die Funktionen eines Moduls sich gegenseitig verwenden, so vermeiden wir durch Einfügen aller Deklarationen zu Anfang Compilerfehler.
+
+Zusammenfassung: Der Compiler ist während der Kompilierung lediglich auf vollständige Deklarationen aller verwendeten Funktionen angewiesen. Diese befinden sich in den jeweiligen Headerdateien. Ist die Kompilierung abgeschlossen, muss der Linker aus einer Menge von kompilierten Modulen ein Programm erstellen. Dazu sucht er zunächst das Modul, welches die °main° Funktion enthält, da an dieser Stelle die Ausführung des Programms beginnen soll. Von diesem Modul ausgehend sucht der Linker nun zu jedem noch nicht verknüpften Funktionsnamen in allen Modulen (auch den Systemmodulen) nach einer Funktion mit dem gleichen Namen und bindet jenes Modul ein, sobald er es gefunden hat. Dies wird fortgeführt, bis alle Namen aufgelöst sind und ein lauffähiges Programm erstellt werden kann.
+
+Es sei an dieser Stelle noch einmal betont, dass das Konzept von Headerdateien (°.h°) ein Modul auf Compilerebene beschreibt, während die Aufteilung von Funktionen auf verschiedene Quellcodedateien (°.c°) ein Modul auf Linkerebene beschreibt. Diese beiden Konzepte funktionieren unabhängig voneinander. Eine Headerdatei könnte etwa Deklarationen von Funktionen enthalten, die auf zwei Quellcodedateien verteilt sind, oder man könnte Deklarationen von Funktionen einer Quellcodedatei auf mehrere Headerdateien verteilen. Auch die Namen von Header- und Quellcodedatei eines Moduls \emph{müssen} streng genommen nicht übereinstimmen - all dies gebietet nur der gute Stil und die Übersichtlichkeit des gesamten Projekts.
+
+\subsection{Der Präprozessor} \label{praeprozessor}
+Bevor der Compiler tatsächlich mit der Kompilierung eines C-Programms beginnt, wird ein Programm aufgerufen, dass als Präprozessor bezeichnet wird. Er führt ausschließlich Textersetzungen im Quellcode durch. Er kann durch spezielle Befehle im Quellcode gesteuert werden, welche durch eine führende Raute (°#°) gekennzeichnet werden. Einige dieser Befehle kennen wir bereits, etwa geschieht das Einbinden von Headerdateien durch den Präprozessorbefehl:
+
+\begin{codes}[Einbinden von Header-Dateien sind Präprozessoranweisungen,label=code:headerdateienmitpraeprozessor]
+#include <stdlib.h>
+#include "myheader.h"
+\end{codes}
+
+Hier erfolgt eine reine Textersetzung - der Inhalt der Datei °myheader.h° wird vollständig an die Stelle des °include° - Befehls kopiert. Die spitzen Klammern sind notwendig, um eine Standardheader einzufügen, während Anführungszeichen verwendet werden, um selbst erstellte Header-Dateien einzufügen. Es gibt jedoch noch einige weitere nützliche Präprozessorbefehle.
+
+\subsubsection{Makrodefinition}
+\begin{alltt}
+#define \ph{MAKRO} \ph{\opt{REPLACE}}
+\end{alltt}
+
+ist eine sogenannte Makrodefinition. Sie weist den Präprozessor an, die Zeichenkette °MAKRO° im Folgenden immer durch °REPLACE° zu ersetzen. Dabei kann °REPLACE° auch der leere String sein bzw. weggelassen werden. Dies kann etwa dazu genutzt werden, Konstanten zu definieren:
+
+\begin{codes}
+#define PI 3.1415926535897931
+\end{codes}
+
+Es gibt weiterhin die Möglichkeit, einem Makro Parameter zu übergeben, die in °REPLACE° verwendet werden können:
+
+\begin{codes}
+#define SQUARE(_x) ((_x)*(_x))
+\end{codes}
+
+Ein Auftreten von °SQUARE(3)° im Quellcode würde an dieser Stelle den String °((3)*(3))° einfügen. Diese Makros sollten mit Vorsicht genossen werden, da lediglich Textersetzungen durchgeführt werden. Ist etwa funct eine langsame Funktion, so führt die Verwendung von °SQUARE(funct(x))° zu  °((funct(A))*(funct(A)))°. Dies bedeutet, dass die Funktion unnötigerweise zwei mal aufgerufen wird. Ähnlich führt °SQUARE(x--)° dazu, dass die Variable °x° zwei mal dekrementiert wird. Man mag sich weiterhin wundern, warum bei der Definition von °SQUARE° so viele Klammern verwendet wurden, doch man führe sich einfach vor Augen, dass °SQUARE(2+2)° ohne die inneren Klammern durch °(2+2*2+2)° ersetzt würde. Es ist sinnvoll, die Parameter bei Makrodefinitionen mit einem Unterstrich zu beginnen, damit keine Konflikte mit tatsächlich vorhandenen Variablen entstehen können.
+
+\subsubsection{Bedingte Texte}
+\begin{alltt}
+    #if \ph{AUSDRUCK}
+        \ph{TEXT A}
+\opt{    #else
+        \ph{TEXT B}}
+    #endif
+\end{alltt}
+
+Dieser Befehl erlaubt es uns, mit dem Präprozessor kleinere Fallunterscheidungen durchzuführen. Wenn die Bedingung der if - Anweisung erfüllt ist, so wird Text A eingefügt, andernfalls Text B. Der else - Zweig der Anweisung ist optional. Auf die verschiedenen Möglichkeiten für Ausdrücke lohnt es sich kaum, hier einzugehen - der wichtigste Ausdruck ist vermutlich
+
+\begin{alltt}
+#if defined(\ph{MAKRONAME})
+\end{alltt}
+
+welcher prüft, ob ein Makro mit Namen °MAKRONAME° bereits definiert ist. Damit lassen sich insbesondere Inklusionskreise bei Headerdateien vermeiden: 
+
+\begin{codes}[Zirkuläre Inclusion verhindern,label=code:zirkulaereinklusion]
+#if !defined(MYMATH_H)
+#define MYMATH_H
+/* Inhalt */
+#endif
+\end{codes}
+
+Beim ersten Einfügen dieser Datei mittels °#include° wird das Makro °MYMATH_H° noch unbekannt sein, daher wird der Präprozessor den Text nach °#if° einfügen und insbesondere das Makro °MYMATH_H° definieren. Sollte die Datei ein zweites mal per °#include° eingefügt werden, ist das Makro °MYMATH_H° nun definiert und der Präprozessor überspringt alles zwischen °#if° und °#endif°. Damit ist also sichergestellt, dass der Inhalt einer Headerdatei nur ein einziges Mal in einem Projekt eingefügt wird. Man nennt dieses Konstrukt auch \df{Include Guards} (Include--Wächter). Es sollte nach Möglichkeit bei allen Headerdateien verwendet werden, da der Präprozessor sonst in eine Endlosschleife gerät, sobald zwei Headerdateien sich gegenseitig per °#include° einbinden.
+
+Da dieser Befehl überaus nützlich und weit verbreitet ist, gibt es eine Kurzschreibweise:
+
+\[ \begin{array}{rcl}
+°#ifndef MYMATH_H° &\Rightarrow& °#if !defined(MYMATH_H)° \\
+°#ifdef  MYMATH_H° &\Rightarrow& °#if  defined(MYMATH_H)°
+\end{array} \]
+
+\subsubsection{Makrodefinition löschen}
+
+\begin{alltt}
+#undef \ph{MAKRONAME}
+\end{alltt}
+
+Wird verwendet, um ein bereits definiertes Makro zu löschen. Ist das angegebene Makro noch nicht definiert, hat der Befehl keine Auswirkung.
+
+\subsection{Präprozessor - Compiler - Linker: Ein Beispiel}
+Wir wollen anhand eines bereits bekannten Beispiels (mit Bildern) den Werdegang eines Projekts aus Quellcodedateien zur fertigen, ausführbaren Datei illustrieren. Angenommen also, wir hätten das folgende Projekt:
+
+\begin{codes}[main.c]
+#include <stdio.h>
+#include "gmodul.h"
+
+int main() {
+  if (gerade(5)) {
+    printf("Verkehrte Welt\n");
+    return 1;
+  } else return 0;
+}
+\end{codes}
+
+\begin{codes}[umodul.h]
+#ifndef _UMODUL_H
+#define _UMODUL_H
+#include "gmodul.h"
+int ungerade(unsigned n);
+#endif
+\end{codes}
+
+\begin{codes}[umodul.c]
+#include "umodul.h"
+int ungerade(unsigned n) {
+  if (n==0) return 0;
+  else return gerade(n-1);
+}
+\end{codes}
+
+\begin{codes}[gmodul.h]
+#ifndef _GMODUL_H
+#define _GMODUL_H
+#include "umodul.h"
+int gerade(unsigned n);
+#endif
+\end{codes}
+
+\begin{codes}[gmodul.c]
+#include "gmodul.h"
+int gerade(unsigned n) {
+ if (n==0) return 1;
+  else return ungerade(n-1);
+}
+\end{codes}
+
+Durch Aufruf von 
+
+\begin{alltt}
+    gcc -Wall -o project5.exe main.c gmodul.c umodul.c
+\end{alltt}
+
+wollen wir das Projekt in eine ausführbare Datei übersetzen. Was geschieht in den einzelnen Phasen? Wären die Präprozessorbefehle in den ersten beiden und der letzten Zeile von °gmodul.h° bzw. °umodul.h° nicht vorhanden, so würde der Präprozessor beim Einfügen von °umodul.h° zunächst °gmodul.h° einfügen und dabei auf Anweisung treffen, °umodul.h° einzufügen - eine Endlosschleife. So aber erzeugt der Präprozessor folgende, überarbeitete Quellcodedateien:
+
+\begin{codes}[main\textasciitilde.c]
+/* inhalt von stdio.h */
+int ungerade(unsigned n);
+int gerade(unsigned n);
+
+int main() {
+  if (gerade(5)) {
+    printf("Verkehrte Welt\n");
+    return 1;
+  } else return 0;
+}
+\end{codes}
+
+\begin{codes}[umodul\textasciitilde.c]
+int gerade(unsigned n);
+int ungerade(unsigned n);
+
+int ungerade(unsigned n) {
+ if (n==0) return 0;
+ else return gerade(n-1);
+}
+\end{codes}
+
+\begin{codes}[gmodul\textasciitilde.c]
+int ungerade(unsigned n);
+int gerade(unsigned n);
+
+int gerade(unsigned n) {
+ if (n==0) return 0;
+ else return ungerade(n-1);
+}
+\end{codes}
+
+Der Compiler kompiliert diese drei Dateien nun unabhängig voneinander in Objektdateien. Dieser Vorgang kann erfolgreich durchgeführt werden, da der Compiler jede aufgerufene Funktion bereits aus einer Deklaration kennt. Wir erhalten drei Module (und haben eine Systembibliothek):
+
+\vspace{0.5cm}
+\xymatrix{
+&\fbox{\txt<6cm>{
+	\underline{°main.o°} \\
+	\emph{Brauche:} °gerade°, °printf°\\
+	\emph{Habe:} °main°
+}} & 
+\fbox{\txt<6cm>{
+	\underline{°stdio.lib°} \\
+	\emph{Habe:} \ldots, °printf°, \ldots
+}} \\
+&\fbox{\txt<6cm>{
+	\underline{°gmodul.o°} \\
+	\emph{Brauche:} °ungerade°\\
+	\emph{Habe:} °gerade°
+}} & 
+\fbox{\txt<6cm>{
+	\underline{°umodul.o°} \\
+	\emph{Brauche:} °gerade°\\
+	\emph{Habe:} °ungerade°
+}} \\
+}
+\vspace{0.5cm}
+\newpage
+
+Der Linker hat nun diese Objektdateien vor sich liegen und die Aufgabe, sie miteinander zu verknüpfen. Er erstellt eine große Binärdatei und verknüpft die Funktionsaufrufe angemessen:
+
+\vspace{0.5cm}
+\xymatrix{
+ \ar@{<=}[r] & \fbox{\txt<6cm>{
+	\underline{°main.o°} \\
+	\emph{Brauche:} °gerade°, °printf°\\
+	\emph{Habe:} °main°
+}} \ar@{<=}[d] \ar@{<=}[r] & 
+\fbox{\txt<6cm>{
+	\underline{°stdio.lib°} \\
+	\emph{Habe:} \ldots, °printf°, \ldots
+}} \\
+& \fbox{\txt<6cm>{
+	\underline{°gmodul.o°} \\
+	\emph{Brauche:} °ungerade°\\
+	\emph{Habe:} °gerade°
+}} \ar@{<=}@<5pt>[r] & 
+\fbox{\txt<6cm>{
+	\underline{°umodul.o°} \\
+	\emph{Brauche:} °gerade°\\
+	\emph{Habe:} °ungerade°
+}} \ar@{<=}@<5pt>[l] \\
+}
+\vspace{0.5cm}
+
+Der Linker muss eine Funktion mit Namen main finden. Diese wird vom fertig verlinkten Programm als Einstiegspunkt verwendet. 
+

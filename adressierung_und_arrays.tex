@@ -1,0 +1,162 @@
+\section{Adressierung und Arrays}
+\subsection{Adressen und Pointer}
+Wie bereits bekannt, lassen sich eine oder mehrere Speicherzellen zu Variablen zusammenfassen, in denen verschiedene Datentypen gespeichert werden können. Bereits bekannt ist auch, dass die Speicherzellen sequentiell durchnummeriert sind - die Nummer der ersten Speicherzelle einer Variablen nennt man auch ihre \df{Adresse}. Um die Adresse einer Variablen (als Zahl) zu erhalten, verwendet man in C den sogenannten \df{Adressoperator} °&° \label{Op:Adresse}:
+
+\begin{codes}[Der Adressoperator,label=code:adressoperator]
+int main () {
+  double euler = 2.7;
+  printf("%lu\n", (unsigned long) &euler); /* Gibt die Adresse von euler aus */
+  return 0; 
+}
+\end{codes}
+
+Eine Variable, welche die Adresse einer anderen Variablen speichert, nennt man einen \df{Pointer}. Ein Pointer hat selbst die Größe eines CPU - Registers, damit die CPU Speicheradressen in Registern halten und gleichzeitig möglichst viel Speicher auf einmal verwalten kann. Um die Variable selbst aus einem Pointer zurückzugewinnen, verwendet man den \df{Dereferenzierungsoperator} °*° \label{Op:Deref}:
+
+\begin{codes}[Der Dereferenzierungsoperator,label=code:dereferenzierungsoperator]
+int main () {
+  double euler = 2.7;
+  printf("%f\n", *(&euler)); /* Gibt euler selbst aus */
+  return 0; 
+}
+\end{codes}
+Um mit Pointern als tatsächlichen Variablen in C arbeiten zu können, müssen zwei Mehrdeutigkeiten aufgelöst werden:
+\begin{itemize}
+	\item Aus der Nummer einer Speicherzelle ist nicht ersichtlich, was für eine Variable an dieser Adresse im Speicher liegt - verschiedene Variablentypen unterscheiden sich durch ihre Interpretation oder belegen sogar unterschiedlich viele Speicherzellen.
+	\item Es ist möglich, die Adresse eines Pointers abzuspeichern, also die Adresse einer Variable, die die Adresse einer anderen Variable enthält. Es ist nicht klar, ob eine Adresse auf einen weiteren Pointer oder eine nichtpointer - Variable verweist.
+\end{itemize}
+Diese Probleme werden in C syntaktisch so gelöst, dass jeder Expression ein sogenanntes \df{Derefernzierungslevel} zugeordnet wird. Dieses bezeichnet die Anzahl der Dereferenzierungen, die mit dem Wert durchgeführt werden müssen, damit das Ergebnis kein Pointer mehr ist. Eine Variable im herkömmlichen Sinne hat somit Dereferenzierungslevel $0$. Ein gewöhnlicher Pointer hat Dereferenzierungslevel $1$, ein Pointer-Pointer hat Level $2$, und so weiter.
+
+Damit erweitert sich die Variablendeklaration um folgendes Detail: Wenn eine Variable Dereferenzierungslevel $n > 0$ haben soll, so schreibt man bei der Deklaration $n$ Sternchen vor den Variablennamen. Auch Funktionen erhalten $n$ Sternchen vor ihrem Namen, wenn sie Variablen zurückgeben, die ein Dereferenzierungslevel $n > 0$ haben. Wir haben jedoch bisher keine Verwendung für Funktionen, die Pointer zurückgeben: Würden sie die Adresse einer ihrer lokalen Variablen zurückgeben, so wäre diese Rückgabe buchstäblich wertlos, da diese Variablen nach Ausführung der Funktion gelöscht werden. Wir wollen uns ein sinnvolles Anwendungsbeispiel für Pointer ansehen:
+
+\begin{codes}[Variableninhalt vertauschen,label=code:swap]
+/* swap() : Zwei int-Variablen vertauschen
+   Input : Die Adressen zweier Variablen a und b
+   Ergebnis : b enthält den Wert von a und umgekehrt */
+
+void swap(int *address1, int *address2) {
+  int temporary = *address1; 
+  *address1 = *address2;
+  *address2 = temporary;
+}
+
+int main() {
+  int a = 10, b = 7;
+  swap(&a, &b);
+  printf("%i\n",a);
+  printf("%i\n",b);
+  return 0;
+}
+\end{codes}
+
+
+\subsection{Statische Arrays}
+
+Ein Array sind mehrere, im Speicher direkt aufeinanderfolgende Variablen vom gleichen Typ, welche durch ihren Abstand (engl.: Offset) vom ersten Element indiziert werden. Einen Array mit \ph{°ANZAHL°} Elementen deklariert man durch 
+
+\begin{alltt}
+\ph{DATENTYP} \ph{ARRAYNAME}[\ph{ANZAHL}]\opt{ = \{ \ph{INITIALISIERUNG} \}} ; 
+\end{alltt}
+
+wobei die Anzahl der Elemente immer eine Konstante sein muss -  daher bezeichnet man solche Arrays auch als \df{statisch}. Die Initialisierung ist eine Expressionliste, welche maximal so viele Einträge haben darf, wie der Array Elemente aufnehmen kann. Hat die Expressionliste weniger Einträge, so werden alle nachfolgenden Elemente des Arrays zu $0$ initialisiert:
+
+\begin{codes}[,label=code:statische_array_initialisierung]
+double point[2] = { 1, 5 }; /* point wird {1.0,5.0} */ 
+int a[10] = { 1, 2, 3, 4 }; /* a wird {1,2,3,4,0,0,0,0,0,0} */
+\end{codes}
+
+Um auf die einzelnen Variablen zuzugreifen, verwendet man eckige Klammern \label{Op:Index}, um den Index anzugeben: 
+
+\begin{alltt}
+\ph{ARRAYNAME}[\ph{INDEX}]
+\end{alltt}
+
+Dabei kann der Index eine beliebige ganzzahlige Expression sein. Das erste Element eines Arrays hat den Index $0$. In obigem Beispiel wäre etwa °a[2]° eine Variable, welche nach Initialisierung den Wert $3$ hat. An dieser Stelle sei angemerkt, dass Zugriff über die Grenzen eines Arrays hinaus in C durchaus möglich ist - es bedeutet einen Zugriff auf den Speicherbereich hinter dem Array. Dies führt jedoch zu unvorhersehbarem Verhalten und meist zum Absturz des Programms.
+
+Um auf Elemente des Arrays zuzugreifen, genügt es, dessen Anfangsadresse zu kennen: Daher verhalten sich statische Arrays in C \emph{fast} wie ein Pointer auf das erste Element des Arrays. Dieser Pointer ist jedoch nicht veränderbar -- er zeigt \emph{statisch} auf das erste Element des Arrays. In eine Arrayvariable °a° selbst darf daher nicht mit ``°=°'' direkt geschrieben werden, sondern nur in die Variablen °a[i]° für ganzzahliges °i°. Insbesondere kann man das Gleichheitszeichen \emph{nicht} benutzen, um ein Array in ein anderes zu kopieren. Um es zu verändern, muss ein Array elementweise modifiziert werden. Zusammenfassend: Jedes Element des Arrays muss einzeln, durch indizierten Zugriff verändert werden.
+
+Man kann nun den Wert einer Arrayvariable (die Adresse des ersten Elements) einem Pointer mit gleichem Datentyp zuweisen: Dieser zeigt dann auf das erste Element des Arrays. Wir werden im nächsten Abschnitt erfahren, welchen Zweck dies erfüllt.
+
+
+\subsection{Pointerarithmetik}
+C ermöglicht es, auf Pointern arithmetische Operationen durchzuführen. Dazu definieren wir zunächst die \df{Größe} eines Datentyps als die Anzahl der Bytes, die eine Variable diesen Typs im Speicher belegt. Die Größe eines Datentyps lässt sich durch den Compilerbefehl °sizeof° \label{Op:Sizeof} bestimmen:
+
+\begin{alltt}
+sizeof(\ph{DATENTYP})
+sizeof(\ph{VARIABLENNAME})
+\end{alltt}
+
+An der Stelle eines °sizeof°-Befehls schreibt der Compiler eine Ganzzahlkonstante, welche der Anzahl Speicherzellen entspricht, die eine Variable des angegebenen Typs bzw. die angegebene Variable beansprucht. So wird etwa °sizeof(double)° zur Konstante $8$. Die Größe einer Pointervariable entspricht der Größe eines CPU-Registers (in Bytes). In C ist die Addition einer ganzen Zahl $n$ zu einem Pointer $p$ so definiert, dass zu der Adresse $p$ das $n$-fache von $d$ addiert wird, wobei $d$ die Größe des durch $p$ referenzierten Datentyps ist. Das additive Verknüpfen von Pointern mit ganzen Zahlen wird als \df{Pointerarithmetik} bezeichnet. In diesem Zusammenhang sind alle gängigen Operator-Kurzschreibweisen (°++°, °--°, °+=°, °-=°) weiterhin verwendbar. Ist nun °ptr° ein Pointer oder ein statisches Array und °i° eine Ganzzahlexpression, so werden die eckigen Klammern eines Indexzugriffs wie folgt vom Compiler übersetzt:
+\[ \begin{array}{rcl}
+°ptr[i]°& \triangleq & °*(ptr + i)°
+\end{array} \]
+Diese Übersetzung findet jedes Mal statt, wenn eckige Klammern verwendet werden. Damit sind also eckige Klammern eine Kurzschreibweise für Pointerarithmetik, kombiniert mit einer Dereferenzierung.
+
+Wenn wir, wie im vorangegangenen Abschnitt besprochen, einem Pointer die Adresse des ersten Elements eines statischen Arrays zuweisen, so können wir den Pointer danach wie das Array selbst verwenden. Dies ist nützlich, wenn Funktionen mit dem Inhalt eines Arrays arbeiten sollen. In diesem Fall übergeben wir für gewöhnlich einen Pointer auf das erste Element des Arrays, wie im folgenden Beispiel:
+\begin{codes}
+#include <stdio.h>
+
+/* bestimme das maximum eines arrays */
+double array_max(unsigned *array, unsigned length) {
+  unsigned i, max = 0;
+  for (i=0; i<length; i++)
+    if (array[i] > max) max = array[i];
+  return max;
+}
+
+int main() {
+  unsigned a[5] = { 12, 9, 1, 3, 7 };
+  printf("%f\n", array_max(a,5));
+}
+\end{codes}
+
+Die Übergabe eines Arrays als Pointer an Funktionen bietet Vorteile. Eine Funktion kann ein uninitialisiertes Array als Argument erhalten, um es mit Inhalt zu füllen und so eine vektorwertige Rückgabe zu liefern. Weiterhin muss nicht jedes mal das komplette Array kopiert werden, um es einer Funktion zu übergeben (lediglich der Pointer wird übergeben). 
+
+\newpage
+\subsection{Zeichenketten}
+Eine °char°-Variable speichert kleine, ganzzahlige Werte, welche als Buchstaben interpretiert werden. Mit einfachen Anführungszeichen eingefasste, einzelne Buchstaben, sind in C daher Ganzzahlkonstanten und können einer °char°-Variable zugewiesen werden: 
+\begin{codes}[Deklaration und Initialisierung einer Variable vom Typ char,label=code:char_dekleration]
+char l = 'B'; 
+\end{codes}
+
+Allerdings entspricht dieser Buchstabe lediglich einer Zahl. Die folgende Variablendeklaration würde l ebenfalls auf den Buchstaben B setzen: 
+\begin{codes}[Initialisieren mit einer Zahl,label=code:char_initialisierung_zahl]
+char l = 66;
+\end{codes}
+
+Auch besondere Zeichen wie etwa Zeilenumbruch oder Tabulatoren haben eine Kodierung als °char°. Die Konstanten für solche sogenannten \df{Steuerzeichen} werden durch einen Backslash eingeleitet:
+
+\begin{table} [H] \centering
+\label{table:sonderzeichen}
+\begin{tabular}{|c|l|} \hline 
+\bfseries{Konstante} & \bfseries{Beschreibung des Zeichens} \\\hline
+°'\n'° & Zeilenumbruch  \\\hline
+°'\r'° & Wagenrücklauf \\\hline
+°'\t'° & Tabulator \\\hline
+°'\a'° & Klingel (erzeugt ein Piepen) \\\hline
+°'\0'° & Nullcharakter (siehe unten) \\\hline
+°'\\'° & Backslash ausgeben \\\hline
+°'\''° & Hochkomma ausgeben \\\hline
+\end{tabular}
+\caption{Steuerzeichen}
+\end{table}
+
+Eine \df{Zeichenkette} (oder \df{String}) ist ein Array von °char°-Variablen. Man verwendet sie, um Text zu speichern und zu verarbeiten. Allerdings kann sich die tatsächliche Länge eines Textes bei der Verarbeitung häufig ändern, unter Umständen ist der Text kürzer als der Array, den man zum Abspeichern des Textes verwenden möchte. Daher verwendet man einen besonderen Wert, um das Ende eines Strings zu markieren: Die char-Variable, die nach dem letzten Buchstaben des Textes im Array kommt, erhält den Wert °'\0'°. Man bezeichnet dies auch als den \df{Nullcharakter} und spricht in diesem Zusammenhang von \df{nullterminierten Strings}. Sobald man bei der Verarbeitung von Strings auf den Nullcharakter trifft, so markiert dies das Ende des Strings, selbst wenn das Array mehr Speicherzellen enthält.
+
+Man kann auch ganze Zeichen\emph{ketten} als Konstante angeben. Zu diesem Zweck verwendet man doppelte Anführungszeichen - Konstante Strings sind uns bereits bei zahlreichen printf() Aufrufen über den Weg gelaufen. Mit einem konstanten String kann man ein °char°-Array initialisieren: 
+\begin{codes}[Initialisierung eines char-Arrays durch einen String,label=code:init_char_array_string]
+char L[100] = "Cola"; 
+\end{codes}
+Dies ist lediglich eine einfachere Schreibweise für 
+
+\begin{codes}[Initialisierung eines char-Arrays durch viele chars,label=code:init_char_array_chars]
+char L[100];
+L[0] = 'C'; 
+L[1] = 'o';
+L[2] = 'l'; 
+L[3] = 'a';
+L[4] = '\0';
+\end{codes}
+
+\emph{Achtung:} Der Array muss also mindestens Platz für alle Zeichen des Strings und den Nullcharakter als Abschlussmarkierung bieten, sofern man diese Initialisierung verwenden möchte. Es ist jedoch \emph{nicht} möglich, einer Arrayvariable eine Stringkonstante später zuzuweisen, da man das Array nur elementweise verändern kann.
+
+Als die \df{Länge} einer Zeichenkette bezeichnet man die Anzahl der Einträge eines °char°-Arrays vor dem abschließenden Nullcharakter. Wir werden später mehr über die Arbeit mit Zeichenketten lernen.

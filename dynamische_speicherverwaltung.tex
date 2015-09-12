@@ -1,0 +1,168 @@
+\section{Dynamische Speicherverwaltung}
+\subsection{Einleitung: Speicherverwaltung}
+Wenn ein Programm Speicher verwendet, so muss es diesen als ``belegt'' markieren, damit der Speicher nicht anderweitig vergeben wird: Auf einem Computer laufen noch weitere Programme, und es muss Klarheit darüber herrschen, welches davon auf welche Speicherbereiche zugreift. Wenn wir bisher Speicher verwendet haben, dann immer in Form einzelner Variablen oder statischer Arrays: Dies sind Regionen im Speicher, von denen schon zur Zeit der {\itshape Kompilierung} fest steht, wie groß sie sein werden. Daher kann der Compiler den notwendigen Code erzeugen, um sich diesen Speicher zu reservieren (und ihn anschließend auch wieder freizugeben). Es gibt jedoch Situationen, in denen wir zur Laufzeit des Programms erst berechnen, wie viel Speicher benötigt wird. In diesem Fall müssen wir Speicher manuell reservieren und wieder freigeben. 
+
+\subsection{Allokierung von Speicher} \label{dynamische_speicherverwaltung:allokierung}
+Wenn die Länge eines im Programm benötigten Arrays nicht von vornherein bekannt ist, sondern erst während der Laufzeit berechnet werden muss, so kann man kein statisches Array verwenden. Zu diesem Zweck gibt es in \headerfile{stdlib.h} eine Funktion zum Erstellen von Arrays dynamischer Größe. Die Anzahl der benötigten Speicherzellen wird an diese Funktion als Parameter übergeben und muss somit nicht konstant sein. Die Funktion findet dann eine unbelegte, ausreichend große und zusammenhängende Region im Speicher, markiert diese als ``belegt'' und liefert einen Pointer auf das erste Byte der Region als Rückgabewert. Diesen Vorgang bezeichnet man auch als \df{Allokierung} von Speicher. Die Deklaration dieser Funktion lautet:
+
+\begin{codes}[Funktionsdeklaration malloc]
+    void *malloc(unsigned int length);
+\end{codes}
+
+Aber Vorsicht - um genug Speicherzellen für einen Array von $n$ °double° - Variablen zu erhalten, muss man natürlich
+
+\begin{codes}
+double *array = malloc(n * sizeof(double));
+\end{codes}
+
+aufrufen, da jede Variable gerade °sizeof(double)° Speicherzellen beansprucht. Das Analoge gilt natürlich auch für alle anderen Datentypen. 
+
+Um nun noch den Rückgabewert von °malloc° zu verstehen, wollen wir die Erklärung des Datentyps °void° aus \ref{bisschenvoid} vervollständigen: Man kann zwar keine void-Variablen (mit Dereferenzierungslevel $0$) erstellen, doch es ist möglich, Pointer auf °void° zu deklarieren. Eine solche Variable nennt man  \df{Voidpointer}. Dieser speichert zwar eine Adresse, kann aber nicht dereferenziert werden - man kann seinen Wert jedoch einer Pointervariable mit gleichem Dereferenzierungslevel und unterschiedlichem Typ zuweisen. Dies soll symbolisieren, dass man den Rückgabewert von °malloc° einer Pointervariable beliebigen Typs zuweisen kann, solange sie ein Dereferenzierungslevel von \emph{mindestens} 1 hat. 
+
+\subsection{Speichermangel} \label{sec:speichermangel}
+Es kann passieren, dass malloc nicht die angeforderte Menge Speicher allokieren kann. In diesem Fall gibt °malloc° den Wert °NULL° zurück. Dies ist ein Pointer, der eine spezielle Speicheradresse (meistens die Adresse $0$) enthält. Man bezeichnet solche Pointer auch als \df{Nullpointer}. Damit dies nicht zu Konflikten führt, wird die Speicherzelle mit der Adresse °NULL°  niemals verwendet. Jeder Pointer mit Wert °NULL° zeigt somit auf ``illegalen'' Speicher und kann nicht dereferenziert werden. Man sollte sich stest nach einem Aufruf von °malloc° überzeugen, keinen Nullpointer zurück bekommen zu haben. In unserem obigen Beispiel etwa so:
+
+\begin{codes}[Rückgabewert von malloc prüfen]
+double *array;
+if ( (array = malloc(n * sizeof(double))) != NULL ) {
+  /* Weiterer code: Verwende array normal */
+} else {
+  /* Fehlerbehandlung: Kein Speicher */
+}
+\end{codes}
+
+\subsection{Speicher freigeben} \label{dynamische_speicherverwaltung:free}
+Ein ``Nachteil'' von dynamischen Arrays besteht darin, dass derartiger, als belegt markierter Speicher, auch vom Programmierer manuell wieder \df{freigegeben}, also als ``nicht belegt'' markiert werden muss, sobald der Array nicht mehr gebraucht wird. Dazu verwendet man die Funktion
+
+\begin{codes}[Funktionsdeklaration free,label=code:funcdefvoid]
+void free(void *array);
+\end{codes}
+
+Analog zur Rückgabe von malloc erhält °free° einen Voidpointer als Argument, so dass man beliebige Pointervariablen übergeben kann. Dieser muss die Adresse des ersten Bytes der allokierten Speicherregion enthalten. Es ist nicht nötig, die Länge des allokierten Speichers mit anzugeben - diese Information werden durch die Funktionen aus dem °malloc° Modul an anderer Stelle gespeichert. Unglücklicherweise ist im C-Standard keine Funktion vorgesehen, die diese Informationen ausliest: Man muss sich die Länge des allokierten Arrays also selbst in einer weiteren Variable merken.
+
+Die Freigabe von Speicher ist unablässig: Wird in einem Programm immer und immer wieder Speicher allokiert, ohne ihn freizugeben, tritt auf kurz oder lang der Fall \ref{sec:speichermangel} ein. Allerdings muss man den Speicher nicht unbedingt in der Funktion wieder freigeben, in der man ihn allokiert - man gibt den Speicher frei, sobald man ihn nicht mehr braucht. 
+
+Um noch ein Beispiel zu liefern: So könnte eine Funktion zum erstellen von dynamischen °double°-Arrays aussehen:
+
+\begin{codes}[Funktion zur Allokierung eines Arrays vom Typ double]
+double *double_malloc( unsigned long count ) {
+  return malloc( count * sizeof(double) );
+}
+\end{codes}
+
+\subsection{Speicherbereiche verändern} \label{dynamische_speicherverwaltung:realloc}
+Es ist möglich, die Größe eines durch °malloc° allokierten Speicherbereiches zu verändern. Dazu verwendet man die Funktion
+
+\begin{codes}
+void *realloc(void *array, unsigned int new_length);
+\end{codes}
+
+Sofern °array° der Nullpointer ist, verhält sich °realloc° genau wie ein Aufruf von °malloc° mit Argument °new_length°. Ist °array° allerdings die Adresse eines bereits allokierten Arrays, so versucht die Funktion, die Größe des allokierten Speichers auf die Größe °new_length° zu bringen. Bei Erfolg bleibt der bisherige Inhalt unverändert -- es sei denn, der Speicherbereich wurde verkleinert. In den folgenden zwei Fällen gibt °realloc° den Nullpointer zurück:
+
+\begin{itemize}
+\item °new_length° hatte den Wert $0$. Dann wurde °array° erfolgreich freigegeben.
+\item °new_length° war größer als die ursprüngliche Größe von °array° und es ist nicht genug Speicher verfügbar. In diesem Fall bleibt der Speicher an der Stelle °array° unverändert. 
+\end{itemize}
+
+Wenn nicht der Nullpointer zurückgegeben wird, so ist der Rückgabewert von °realloc° ein Pointer auf das vergrößerte Array. Dieser wird nicht unbedingt der gleiche sein, der an °realloc° übergeben wurde: Wenn hinter dem bereits allokierten Speicher nicht genug Platz ist, wird °realloc° an einer anderen Stelle genug Speicher allokieren, den Inhalt von °array° dorthin kopieren und den alten Speicher freigeben. Achtung also: Man sollte °realloc° immer wie folgt verwenden:
+
+\newpage
+
+\begin{codes}
+double *array, *tmp; 
+unsigned int n; /* Anzahl Elemente des Arrays */
+/* ... */
+if (tmp = realloc(array, n*2*sizeof(*array) )) {
+  array = tmp;
+  n *= 2;
+  /* Speicher verwenden */
+} else {
+  /* Fehlerbehandlung */
+}
+\end{codes}
+
+
+\subsection{Funktionen zum Speichermanagement}
+Neben den Allokierungsfunktionen benötigt man meistens noch einige zusätzliche Funktionen, um den Inhalt von Speicherbereichen zu manipulieren. Alle nachfolgenden Funktionen sind nicht in \headerfile{stdlib.h} deklariert, sondern in \headerfile{string.h}. Um den Inhalt von Speicherregionen zu kopieren, kann man die Funktion °memmove° verwenden:
+
+\begin{codes}
+void *memmove(void *dest, void *src, unsigned int count);
+\end{codes}
+
+Sie kopiert die ersten °count° Bytes von °src° auf die ersten °count° Bytes bei °dest°. 
+
+Gelegentlich ist es noch nützlich, alle Speicherzellen eines Speicherblocks auf einen bestimmten Wert °b° (meistens °0°) setzen zu können. Dazu verwendet man die Funktion
+
+\begin{codes}[,label=code:defmemset]
+void *memset(void *dest, int b, unsigned int count);
+\end{codes}
+
+Irreführenderweise ist das zweite Argument als °int° deklariert, obwohl natürlich nur Werte im Bereich von $0$ bis $255$ zulässig sind: Von dem übergebenen °int° betrachtet °memset° nur das unterste Byte. Die Funktion setzt dann die ersten °count° Bytes an der Adresse °dest° auf °b°. Als letztes beschreiben wir noch eine Funktion, um den Inhalt zweier Speicherregionen zu vergleichen:
+
+\begin{codes}[,label=code:defmemcp]
+int memcmp(void *a, void *b, unsigned int count);
+\end{codes}
+
+Die Funktion liefert den Wert °0°, wenn der Inhalt des Speichers bei °a° (die °count° aufeinanderfolgenden Bytes bei °a°) und bei °b° der gleiche ist. Wenn sich die Speicherinhalte unterscheiden, so vergleicht °memcmp° sie lexikographisch\footnote{Nach lexikographischer Ordnung ist ein Array von Bytes °a° kleiner als ein ebenso langes Array von Bytes °b°, wenn der erste Eintrag von °a°, in dem sich beide Arrays unterscheiden, kleiner ist als der entsprechende Eintrag von °b°.} und gibt genau dann einen Wert kleiner/größer °0° zurück, wenn °a° kleiner/größer ist als °b°.
+
+\newpage
+\subsection{Stringmanipulation}
+Speicher für Strings lässt sich freilich über °malloc° allokieren. Da Strings aber eine spezielle Art von Array sind, gibt es in \headerfile{string.h} noch einige Funktionen speziell für das Arbeiten mit Zeichenketten. Etwa sollte man statt °memmove° für Strings eher die Funktion 
+
+\begin{codes}
+char *strcpy(char *dest, char *src);
+\end{codes}
+
+verwenden. Diese überschreibt den String bei °dest° mit dem bei °src°, inklusive des abschließenden Nullzeichens. Da Strings nullterminiert sind, muss auch kein Längenargument übergeben werden. Es ist natürlich Vorsicht bei der Verwendung geboten, da die Funktion °strcpy° immer davon ausgeht, dass bei dest genügend Speicherplatz verfügbar ist für die Zeichen aus °src° (inklusive abschließendem Nullzeichen.) 
+
+Möchte man die Länge eines Strings bestimmen, so verwendet man die Funktion
+
+\begin{codes}
+int strlen(char *str);
+\end{codes}
+
+Besonders häufig möchte man zwei Strings ``verketten'' - also hinter das Ende eines Strings die Zeichen eines anderen Strings kopieren. Die Verkettung von °"Coca\0"° mit °"Cola\0"° wäre dann °"CocaCola\0"° - die abschließende Null des ersten Strings wird also bei diesem Vorgang überschrieben. Um zwei Strings zu verketten, verwendet man die Funktion
+
+\begin{codes}
+char *strcat(char *s1, char *s2);
+\end{codes}
+
+Auch hier wird davon ausgegangen, dass hinter °s1° ausreichend Speicherplatz verfügbar ist, um alle Zeichen aus °s2° zu beherbergen. Um die Funktionsweite weiter zu verdeutlichen hier eine Möglichkeit, wie °strcat° mit den bereits bekannten Funktionen °strlen° und °strcpy° implementiert sein könnte:
+
+\begin{codes}
+char *strcat(char *s1, char *s2) {
+  strcpy(s1+strlen(s1),s2);
+  return s1;
+}
+\end{codes}
+
+Um schlussendlich die Kopie eines Strings zu erstellen, verwendet man die Funktion
+
+\begin{codes}
+char *strdup(char *str);
+\end{codes}
+
+Sie allokiert ausreichend Speicher um den gesamten String bei °str° inklusive abschließendem Nullzeichen zu beherbergen, kopiert den String an diese Stelle und gibt einen Pointer auf den neuen String zurück. 
+
+Eine Implementierung könnte etwa wie folgt aussehen:
+
+\begin{codes}
+char *strdup(char *str) {
+  char *copy;
+  unsigned length = (strlen(str)+1) * sizeof(char);
+  /* allokiere Platz für String und Terminierungszeichen */
+  if (copy = malloc(length)) {
+    return memmove(copy, str, length);
+  } else return NULL;
+}
+\end{codes}
+
+Der von °strdup° zurückgegebene Pointer \emph{muss} also im weiteren Verlauf des Programms irgendwann durch Übergabe an °free° wieder freigegeben werden!
+
+Um zwei Strings zu vergleichen, verwendet man
+
+\begin{codes}
+int strcmp(char *a, char *b);
+\end{codes}
+
+Die Rückgabe von °strcmp° ist °0° genau dann, wenn die Strings gleich sind (also gleiche Länge haben und gleiche Zeichen enthalten). Andernfalls ist die Rückgabe größer (bzw. kleiner) als °0°, wenn °a° lexikographisch größer (bzw. kleiner) als °b° ist. Es gibt noch einige weitere Funktionen in der \headerfile{string.h}, doch lassen sich diese auch in einer geeigneten C-Referenz nachschlagen.

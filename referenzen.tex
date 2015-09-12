@@ -1,0 +1,222 @@
+\section{Referenzen}
+Es folgen Referenzen für einige wichtige Systemmodule, welche C bereits zur Verfügung stellt.
+
+\subsection{Referenz \texttt{<math.h>}}
+Durch einbinden der Systemheaderdatei °<math.h>° stehen die folgenden mathematischen Funktionen zur Verfügung:
+
+\begin{table}[H] \centering
+\begin{tabular}{ll} \hline 
+\bfseries{Deklaration} & \bfseries{Rückgabewert} \\\hline
+\ic{double acos(double x);} 
+& Arcuscosinus von °x° \\
+\ic{double asin(double x);} 
+& Arcussinus von °x° \\
+\ic{double atan(double x);}
+& Arcustangenz von °x° \\
+\ic{double atan2(double y, double x);} 
+& Arcustangenz von °x/y° \\
+\ic{double ceil(double x);} 
+& Kleinste ganze Zahl, welche $\ge$ °x° ist \\
+\ic{double cos(double x);}
+& Cosinus von °x° \\
+\ic{double cosh(double x);} 
+& Cosinus hyperbolicus von °x° \\
+\ic{double exp(double x);}
+& $e^x$, wobei $e = 2.718281\ldots$ \\
+\ic{double fabs(double x);}
+& $|x|$ (Betrag von °x°) \\
+\ic{double floor(double x);} 
+& Größte ganze Zahl, welche $\le$ °x° ist \\
+\ic{double ldexp(double x, double y)} 
+& $x \cdot 2^y$ \\
+\ic{double log(double x);} 
+& Natürlicher Logarithmus von °x° \\
+\ic{double log10(double x);}
+& Zehnerlogarithmus von °x° \\
+\ic{double pow(double x, double y);}
+& $x^y$ \\
+\ic{double sin(double x);}
+& Sinus von °x° \\
+\ic{double sinh(double x);}
+& Sinus hyperbolicus von °x° \\
+\ic{double sqrt(double x);}
+& $\sqrt{x}$ (Quadratwurzel aus °x°) \\
+\ic{double tan(double x);} 
+& Tangens von °x° \\
+\ic{double tanh(double x);}
+& Tangens hyperbolicus von °x° \\
+\hline
+\end{tabular}
+\caption{Von math.h exportierte Funktionen}
+\label{table:math.h}
+\end{table}
+
+Außerdem ist in °<math.h>° eine Konstante °HUGE_VAL° definiert: Dies ist der größte Wert, den eine Variable vom Typ °double° annehmen kann. Fast immer entspricht dies einem symbolischen Wert ``$\infty$''.
+
+\subsection{Referenz \texttt{<time.h>}} \label{time.h}
+
+Zunächst sind in der °<time.h>° einige neue Datentypen definiert, welche in der Regel nur Umbenennungen (siehe \ref{typdefinitionen}) von gewöhnlichen, ganzzahligen Datentypen sind:
+
+\begin{table}[H] \centering \begin{tabular}{lp{28em}} \hline 
+\bfseries{Datentyp} & \bfseries{Bedeutung} \\\hline
+°clock_t° 
+& Speichert \df{CPU-Zeiten} (siehe unten) \\
+°size_t° 
+& Speichert ganzzahlige Größenangaben \\
+°time_t° 
+& Datentyp für Zeitangaben (meistens eine Anzahl von Sekunden) \\
+\hline
+\end{tabular}
+\caption{Einfache Datentypen aus time.h}
+\label{table:time.h:typen}
+\end{table}
+Eine CPU braucht für jeden Maschinenbefehl die gleiche Zeit. Dieses Zeitintervall wird auch als \df{Takt} bezeichnet, und eine CPU-Zeit entspricht einer gewissen Anzahl Takte. 
+
+Weiterhin definiert ist die Struktur °struct tm°, welche alle Komponenten einer Kalenderzeit im Gregorianischen Kalender enthält. Ihre Definition muss mindestens die folgenden Felder enthalten:
+
+\begin{codes}
+struct tm {     /* Feldbeschreibung         Intervall */
+                /* ---------------------------------- */
+  int tm_sec;   /* Sekunden nach der Minute    [0,59] */
+  int tm_min;   /* Minuten nach der Stunde     [0,59] */
+  int tm_hour;  /* Stunden seit Mitternacht    [0,23] */
+  int tm_mday;  /* Tag des Monats              [1,31] */
+  int tm_mon;   /* Monat seit Januar           [0,11] */
+  int tm_year;  /* Jahreszahl                 [1900,[ */
+  int tm_wday;  /* Tag seit Sonntag             [0,6] */
+  int tm_yday;  /* Tag seit dem 1. Januar     [0,365] */
+                /* ---------------------------------- */
+  int tm_isdst; /* Zeigt an, ob es sich um Sommerzeit */
+                /* (daylight saving time) handelt.    */
+                /* 0 steht hierbei für "Nein", -1 für */
+                /* "unbekannt", alles andere für "Ja" */
+};
+\end{codes}
+
+Tabelle \ref{table:time.h} gibt Aufschluss über die Funktionen zum Berechnen der Zeit, welche in °<time.h>° definiert sind:
+
+\begin{table}[H] \centering
+\begin{tabular}{lp{20.5em}} \hline 
+\bfseries{Deklaration} & \bfseries{Effekt} \\\hline
+\ic{time\_t time(time\_t *p);}
+& Gibt bei Misserfolg °-1° zurück, andernfalls die momentane Zeit. Ist °p° $\ne$ °NULL°, so wird dieses Ergebnis in °*p° zusätzlich noch abgespeichert. \\ 
+\ic{clock\_t clock();} 
+& Gibt bei Misserfolg °-1° zurück, andernfalls die seit Programmstart vergangene CPU-Zeit. \\
+\hline
+\end{tabular}
+\caption{Funktionen zum Ermitteln der Zeit}
+\label{table:time.h}
+\end{table}
+
+Die folgenden Umrechnungsfunktionen geben stets den gleichen Pointer auf einen internen °struct tm° zurück, welcher \emph{auf keinen Fall} vom Programmierer freigegeben werden sollte. Des weiteren Überschreibt jeder Aufruf einer Umrechnungsfunktion die Werte dieser Struktur:
+
+\begin{table}[H] \centering
+\begin{tabular}{ll} \hline 
+\bfseries{Deklaration} & \bfseries{Umrechnung in} \\\hline 
+\ic{struct tm *gmtime(time\_t*);} 
+& UTC-Kalenderzeit \\
+\ic{struct tm *localtime(time\_t*);}
+& Lokale Kalenderzeit \\
+\hline
+\end{tabular}
+\caption{Umrechnungsfunktionen für Zeiten}
+\label{table:time.h:umrechnungsfunktionen}
+\end{table}
+
+Um die Funktion °clock()° sinnvoll zu verwenden, ist in der °<time.h>° noch die Konstante °CLOCKS_PER_SEC° definiert, welche die Anzahl CPU-Takte pro Sekunde angibt.
+\newpage
+
+\subsection{Referenz \texttt{<stdlib.h>}}
+Zunächst ist in der °<stdlib.h>° der Datentyp °size_t° (siehe dazu auch Tabelle \ref{table:time.h:typen} in Anhang \ref{time.h}) und die Konstante °NULL° definiert. Weiterhin stehen durch einbinden von °<stdlib.h>° die folgenden Funktionen zur Verfügung:
+
+\begin{table}[H] \centering
+\begin{tabular}{lp{15em}} \hline 
+\bfseries{Deklaration} & \bfseries{Funktionsweise} \\\hline
+\ic{void *malloc(size\_t c);}
+& Siehe \ref{dynamische_speicherverwaltung:allokierung}. \\ 
+\ic{void *realloc(void *p, size\_t c);} 
+& Siehe \ref{dynamische_speicherverwaltung:realloc}. \\
+\ic{void free(void *p);} 
+& Siehe \ref{dynamische_speicherverwaltung:free}. \\
+%\ic{void *calloc(size\_t n, size\_t s);}
+%& Allokiert einen Speicherbereich, der groß genug ist, um °n° viele Objekte von °s° Bytes zu speichern. Alle Bytes in diesem Speicherbereich werden duch °calloc° mit °0° initialisiert. Gibt °NULL° zurück bei Speichermangel. \\
+\hline
+\ic{int system(char *s);} 
+& Hat den gleichen Effekt, als wäre die Zeichenfolge °s° auf der Kommandozeile eingegeben worden. \\
+\hline
+\ic{int abs(int i);} 
+& Berechnet den Absolutwert von °i°. \\
+\ic{long labs(long i);}
+& Berechnet den Absolutwert von °i°. \\
+\ic{int atoi(char *s);}
+& Gibt die Ganzzahl zurück, die in Dezimalschreibweise in °s° steht. \\
+\ic{double atof(char *s);}
+& Gibt die Gleitkommazahl zurück, die in °s° steht. \\
+\hline
+\end{tabular}
+\caption{Funktionen aus stdlib.h}
+\label{table:stdlib.h:memory}
+\end{table}
+
+Des Weiteren stehen zur Verfügung:
+
+\begin{table}[H] \centering
+\begin{tabular}{lp{21em}} \hline 
+\bfseries{Deklaration} & \bfseries{Effekt} \\\hline
+\ic{void srand(unsigned s);}
+& Initialisiert den internen Zufallsgenerator mit dem Wert °s°. \\ \hline
+\ic{int rand();}
+& Liefert eine Pseudo--Zufallszahl aus dem Bereich von 0 bis °RAND_MAX° (wobei °RAND_MAX° eine Konstante ist, die garantiert $\ge 32767$ ist). \\
+\hline
+\end{tabular}
+\caption{Funktionen für Zufallszahlen aus stdlib.h}
+\label{table:stdlib.h:rand}
+\end{table}
+
+Der Zufallszahlengenerator muss per °srand° initialisiert werden. Wird °rand° ohne vorherige Initialisierung aufgerufen, sind die zurückgegebenen Zufallszahlen bei jedem Programmablauf die gleichen (und damit nicht wirklich zufällig). Für gewöhnlich verwendet man die Funktion °time° (siehe Anhang \ref{time.h}), um den Zufallszahlengenerator mittels
+\begin{codes}
+srand( time( NULL ) );
+\end{codes}
+zu initialisieren. 
+
+\subsection{Referenz \texttt{<limits.h>}}
+In der °<limits.h>° sind die folgenden Konstanten definiert, welche maximale und minimale Größe ganzzahliger Datentypen enthalten.
+
+\begin{table}[H] \centering \begin{tabular}{lll} \hline 
+\bfseries{Konstante} & \bfseries{Mindestwert} & \bfseries{Bedeutung} \\\hline
+°CHAR_BIT°  & ° 8°      & Anzahl Bits in einem Byte \\
+°SHRT_MIN°  & °-32767° & Minimalwert für °signed short° \\
+°SHRT_MAX°  & °+32767° & Maximalwert für °signed short° \\
+°USHRT_MAX° & ° 65535° & Maximalwert für °unsigned short° \\
+°INT_MIN°   & °-32767° & Minimalwert für °signed int° \\
+°INT_MAX°   & °+32767° & Maximalwert für °signed int° \\
+°UINT_MAX°  & ° 65535° & Maximalwert für °unsigned int° \\
+°LONG_MIN°  & °-2147483647° & Minimalwert für °long int° \\
+°LONG_MAX°  & °+2147483647° & Maximalwert für °long int° \\
+°ULONG_MAX° & ° 4294967295° & Maximalwert für °unsigned long int° \\
+\hline
+\end{tabular}
+\caption{Limits für Ganzzahlen}
+\label{table:limits.h}
+\end{table}
+
+In der Realität sind die Werte häufig betragsmäßig größer als der Mindestwert, insbesondere für °int° und °long int°.
+
+\subsection{Referenz \texttt{<float.h>}}
+In der °<float.h>° sind die folgenden Konstanten definiert, welche im Zusammenhang mit Fließkommazahlen häufig von Bedeutung sind:
+
+\begin{table}[H] \centering \begin{tabular}{lp{27em}} \hline 
+\bfseries{Konstante} & \bfseries{Bedeutung} \\\hline
+°FLT_MAX° & Größter, endlicher Wert für ein °float° \\
+°FLT_MIN° & Kleinster positiver, endlicher Wert für ein °float° \\
+°FLT_EPSILON° & Kleinster positiver °float°--Wert $\varepsilon$, für den $1.0 + \varepsilon \ne 1.0$ gilt \\
+°DBL_MAX° & Größter, endlicher Wert für ein °double° \\
+°DBL_MIN° & Kleinster positiver, endlicher Wert für ein °double° \\
+°DBL_EPSILON° & Kleinster positiver °double°--Wert $\varepsilon$, für den $1.0 + \varepsilon \ne 1.0$ gilt \\
+\hline
+\end{tabular}
+\caption{Limits und Konstanten für Fließkommazahlen}
+\label{table:float.h}
+\end{table}
+
+Die Konstante °DBL_EPSILON° eignet sich hervorragend als Fehlertoleranz bei numerischen Algorithmen.

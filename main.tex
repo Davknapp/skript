@@ -1,0 +1,40 @@
+\input{../header}
+
+\lstset{
+	language=c,basicstyle=\footnotesize,numbers=left,
+	numberstyle=\footnotesize,stepnumber=1,
+	numbersep=5pt,backgroundcolor=\color{white},
+	showspaces=false,showstringspaces=false,
+	showtabs=false,frame=single,tabsize=2,
+	captionpos=b,breaklines=true,
+	breakatwhitespace=false,escapeinside={(*@}{@*)}
+}
+
+\begin{document}
+
+\title{C-Programmierkurs}
+\date{03730 AD}
+\author{\theauthor}
+\maketitle
+%\begin{abstract}
+\input{zusammenfassung}
+%\end{abstract}
+\tableofcontents
+
+\include{einfuerung}
+\include{elementare_sprachkonstrukte}
+\include{funktionen}
+\include{adressierung_und_arrays}
+\include{dynamische_speicherverwaltung}
+\include{eingabe_und_ausgabe}
+\include{datenstrukturen}
+\include{diverses_und_funktionenpointer}
+\include{openmp}
+
+\begin{appendix}
+\renewcommand{\arraystretch}{1.2} 
+\include{referenzen}
+\include{operator.precedence}
+\end{appendix}
+
+\end{document}

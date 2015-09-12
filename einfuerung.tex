@@ -1,0 +1,98 @@
+\section{Einführung}
+
+\subsection{Der Speicher}
+
+\pic{8cm}{speicher}{Der Speicher}
+
+Wenn wir von Speicher sprechen, so meinen wir nicht die Festplatte, sondern ein Bauteil des Computers, das während des laufenden Betriebs Daten nur für die Dauer eines Programmablaufs abspeichert. Man bezeichnet dies auch als RAM (Random Access Memory).
+
+Der Speicher ist eine durchnummerierte Aneinanderreihung von Speicherzellen. Eine Speicherzelle ist ein elektronischer Chip, welcher wiederum $8$ Bauteile enthält: Diese Bauteile nennt man \df{Bits}. Ein Bit kann geladen und entladen werden, hat somit immer genau einen Zustand $1$ oder $0$. Jede Speicherzelle kann daher $2^8 =256$  Zustände annehmen (mögliche Kombinationen von Zuständen der einzelnen $8$ Bits). Fast immer interpretiert man diese Zustände als ganze Zahlen zwischen $0$ und $255$. Diese Interpretation ist gegeben durch die Darstellung einer Zahl im Binärformat. Eine Speicherzelle bezeichnet man auch als \df{Byte}. Die Speicherzelle hat $8$ ausgehende Drähte, auf welchen nur Strom fließt, wenn das dazugehörige Bit gesetzt (also $1$) ist. Aus technischen Gründen kann immer nur ein ganzes Byte auf einmal gelesen oder neu beschrieben werden, keine einzelnen Bits.
+
+Man möchte auch negative Zahlen in Bytes codieren können. Man könnte dafür das erste Bit als sogenanntes \df{Vorzeichenbit} reservieren, um sich zu merken, ob die Zahl positiv (Vorzeichenbit gleich $0$) oder negativ (Vorzeichenbit gleich $1$) ist. Die restlichen Bits können dann nur noch $128$ verschiedene Zustände annehmen, also können wir nun die Zahlen von $-127$ bis $127$ darstellen. Dieses Prinzip zeigt anschaulich, dass es einen markanten Unterschied zwischen Daten und deren Interpretation gibt. Ein Byte kann als positive Zahl zwischen $0$ und $255$ oder aber als vorzeichenbehaftete Zahl zwischen $-127$ und $127$ interpretiert werden. Beides verwendet jedoch das gleiche Speichermedium. Man bezeichnet eine solche Interpretation als \df{Datentyp}. In der Realität wird zur Darstellung negativer Zahlen ein anderes Format, genannt "`Zweierkomplement"', verwendet, welches praktischer zu implementieren ist und nur eine Null enthält (das obige Format hat eine $+0$ und eine $-0$).
+
+Durch Zusammenschluss von Speicherzellen lassen sich auch größere Zahlen darstellen. Den Zusammenschluss von zwei Bytes bezeichnet man als \df{Word} (Wort), es kann bereits $2^{16} = 65536$ Zustände annehmen. Ein \df{DWord} (Doppelwort) ist der Zusammenschluss von zwei Words und daher $4$ Bytes oder $32$ Bit lang. Es kann zum speichern von Zahlen zwischen $0$ und $2^{32} - 1 = 4294967295$ verwendet werden. Dementsprechend bezeichnet man $64$-Bit-Speicherblöcke als \df{QWord} (Quad Word). 
+
+Eine Variable, die nur ein einzelnes Byte umfasst, wird gelegentlich auch als \df{char} bezeichnet, für "`Character"'. Der Name dieses Datentyps leitet sich daraus her, dass einzelne Buchstaben und andere Zeichen als Zahlen von 0 bis 255 im Computer abgespeichert werden. Zeichenketten und ganze Texte sind somit Speicherblöcke von $n$ aufeinanderfolgenden Bytes (chars), wobei $n$ die Länge der Zeichenkette ist.
+
+Gelegentlich ist es nötig, auch über eine Darstellung reeller Zahlen zu verfügen. Dafür werden 8 Bytes Speicher (ein QWord) benötigt, die von einem internen Subprozessor als Kommazahlen interpretiert werden. Auf die genaue Realisierung werden wir nicht näher eingehen. Dieser Datentyp trägt den Bezeichner \df{double}. 
+
+\subsection{Maschinencode und Kompilierung}
+Computer wurden ursprünglich als aufwendige Rechenmaschinen entworfen. Sie alle enthalten einen Kernchip, welcher auch heute noch alle tatsächlichen Berechnungen durchführt. Dieser Baustein ist die Central Processing Unit, auch kurz CPU. Die CPU enthält intern eine sehr geringe Anzahl Speicherzellen (etwa 8 bis 30), die auf modernen Computern für gewöhnlich die Größe eines QWords haben (obwohl auch noch DWords anzutreffen sind). Dies nennt man auch die \df{Registergröße} oder \df{Wortgröße} der CPU, die Speicherzellen selbst dementsprechend \df{Register}.
+
+\cpic{computer}{Schematischer Aufbau eines Computers}
+\newpage
+Die CPU eines Computers kann nur eine sehr geringe Anzahl von rudimentären Rechenoperationen durchführen. Genau wollen wir darauf nicht eingehen, doch besteht ein solcher CPU-Befehl beispielsweise daraus, den Inhalt zweier Register zu addieren, subtrahieren, multiplizieren, dividieren oder ähnliche arithmetische Operationen durchzuführen. Natürlich kann die CPU auch bis zu einer Registergröße Daten aus dem Speicher in ein Register laden, oder aus einem Register Daten in den Speicher schreiben. Jedem CPU-Befehl ist ein numerischer Code zugewiesen, welcher in einem Word gespeichert werden kann. Die so codierten CPU-Befehle heißen \df{Maschinencode}. Um ein Computerprogramm auszuführen, liest die CPU aus dem Speicher Maschinencode ein und führt die Befehle nacheinander aus. Es ist nun jedoch ausgesprochen mühsam, auf diese Art und Weise Algorithmen zu implementieren: Dies führte zur Entwicklung von Programmiersprachen, die eine für Menschen wesentlich zugänglichere Syntax vorweisen können. Als \df{Compiler} bezeichnet man Programme, die den Programmcode einer Programmiersprache in Maschinencode übersetzen. Diesen Vorgang nennt man Kompilierung. Der Compiler selbst muss freilich irgendwann mühsam als Maschinencode implementiert worden sein. 
+
+\subsection{Hello World} \label{helloworld}
+Es ist Tradition, dass junge Schüler einer Programmierdisziplin sich Ihre Hörner an einem sogenannten Hello-World-Programm abstoßen. Ein solches Programm hat keinen Effekt, außer den Text "`Hello World"' auf dem Computerbildschirm erscheinen zu lassen.
+
+\begin{codes}[Ein Hallo-Welt-Programm in C,label=code:hworld]
+#include <stdio.h>
+int main() {
+ 	printf("Hello World");
+ 	return 0;
+}
+\end{codes}
+
+Wir können an dieser Stelle noch nicht genau auf die Bedeutung aller Programmierbefehle eingehen, wollen aber dennoch alles kommentieren. Die erste Zeile sorgt dafür, dass unserem Programm die Befehle zur Verfügung stehen, um Text auszugeben. Die nächste Zeile markiert den Einstiegspunkt des Programms, d.h. die Stelle, ab der beim Start später mit der Ausführung begonnen werden soll. Die auszuführenden Befehle sind in einem sogenannten \df{Block} zusammengefasst, welcher mit geschweiften Klammern umschlossen ist. Die Befehle selbst sind überschaubar: Der erste erzeugt die Ausgabe von "`Hello World"' und der zweite beendet das Programm. Dabei wird der sogenannte \df{Fehlercode} $0$ zurückgegeben, welcher signalisiert, dass beim Ausführen des Programms kein Fehler aufgetreten ist. Dieser Rückgabewert ist für den Anwender des Programms später nicht erkennbar: er kann jedoch dazu dienen, verschiedene Programme miteinander kommunizieren zu lassen.
+
+Außerdem bemerken wir an dieser Stelle, dass in C jeder \textit{Befehl durch ein Semikolon beendet werden muss}. Dies ist eine wichtige Regel, deren Missachtung häufig zu scheinbar unerklärlichen Fehlern bei der Kompilierung führt. In der Tat dienen die Zeilenumbrüche im Quellcode "`nur"' der Übersichtlichkeit, ein Befehl wird durch das abschließende Semikolon beendet. Daher wäre auch der folgende Quellcode zum obigen äquivalent und absolut korrekt:
+
+\begin{codes}[Hallo-Welt in einer Zeile,label=code:onelinehworld]
+#include <stdio.h>
+int main() { printf("Hello World"); return 0; }
+\end{codes}
+
+\subsection{Gcc unter Windows}
+Der Compiler, mit dem wir unser Hello World - Programm und auch zukünftige Übungen in ausführbaren Maschinencode übersetzen werden, ist der C-Compiler aus der GNU Compiler Collection, welchen wir hier kurz exemplarisch einführen wollen. Er trägt den Namen \df{gcc}. Obgleich er ein sehr weit verbreiteter und gängiger Compiler ist, ist er selbstverständlich nicht der Weisheit letzter Schluss - es gibt eine Vielzahl weiterer Compiler, von denen einige leider nur käuflich zu erwerben sind.
+
+Der gcc ist ein unter Linux entwickelter Compiler. Für eine ganze Sammlung von Linux-Programmen existieren Windows-Ports: Diese Sammlung heißt Cygwin. Wir werden hier kurz erläutern, wie Cygwin zu installieren und zu bedienen ist. Außerdem werden wir in der zweiten Woche des Kurses noch die Eclipse IDE mit den C/C++ Developer Tools und der Cygwin Toolchain verwenden. Die Installationsanleitung für Eclipse folgt hier ebenfalls, wenn ihr aber gerade den Kurs macht, müsst ihr erst einmal nur Cygwin installieren.
+
+\pagebreak
+{\input{installations-anleitung}}
+
+\subsection{Bedienung von Cygwin}
+
+Cygwin selbst lässt sich nun vom Startmenü aus aufrufen und präsentiert sich als schwarzes Fenster mit einer blinkenden Eingabe, etwa wie folgt:
+
+\begin{verbatim}
+rattle@lucy ~
+$
+\end{verbatim}
+
+Hinter dem Dollarzeichen erwartet Cygwin nun einen Befehl. Es gibt zahlreiche Befehle, einige wichtige haben wir hier für euch aufgelistet:
+
+\begin{table}[H] \centering
+\begin{tabular}{l|p{22em}} 
+\bfseries{Befehl} & \bfseries{Effekt}  \\\hline
+°ls° & Listet den Inhalt des derzeitigen Verzeichnisses auf.  \\
+°mkdir <name>° & Erstellt einen Ordner mit dem angegebenen Namen \\
+°cd <ordner>° & Wechselt in den angegebenen Ordner.   \\
+°cp <quelle> <ziel>° & Kopiert die Datei quelle nach ziel. \\
+°mv <quelle> <ziel>° & Verschiebt die Datei quelle nach ziel. \\
+°rm <datei>° & Löscht eine Datei. \\
+\end{tabular}
+\label{table:cmd}
+\caption{Befehle der Cygwin-Kommandozeile}
+\end{table}
+
+Ein einzelner Punkt steht für das derzeitige Verzeichnis und zwei Punkte für das darüberliegende. Der Befehl °cd .° hat also keinen Effekt und °cd ..° bewegt sich einen Ordner nach oben.
+
+Darüber hinaus ist jedes Programm, dass auf dem Computer (bzw. in Cygwin) installiert ist, ein Befehl. Durch eingabe von °notepad° beispielsweise öffnet sich der Windows-Texteditor und der Befehl °gcc° ruft den Compiler auf. Nun wollen wir unser Hello World Programm aus \ref{helloworld} kompilieren und ausführen:
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=11.9cm]{cygshell}
+\caption{Kompilieren von ``Hello World'' unter Cygwin}
+\end{figure}
+
+Durch °notepad helloworld.c° erstellen wir die Textdatei °helloworld.c°. Es ist Konvention, dass Dateien, welche C-Quellcode enthalten, die Dateiendung °.c° erhalten. Wir bitten freundlich um Einhaltung dieser Konvention unter Androhung ritueller Enthauptung. Nach Tippen des oben angegebenen Quellcodes speichern wir die Datei und kehren zur Kommandozeile zurück. Der Befehl °gcc° hat folgendes Format:
+
+\begin{alltt}
+    gcc \opt{-Wall -pedantic} -o \ph{EXECUTABLE} \ph{QUELLDATEI}
+\end{alltt}
+
+wobei in diesem Fall unsere Quelldatei den Namen °helloworld.c° trägt. Als Name für die Executable bietet sich der Name °helloworld.exe° an, doch natürlich steht einem die Entscheidung hier frei. Die Option °-Wall° ist eine Abkürzung für "`Warning: All"' und bedeutet, dass der Compiler alle Warnungen ausgibt. Warnungen sind unser wichtigstes Hilfsmittel, um später Fehler in Programmen zu finden und zu beheben.
+
+Nachdem wir den gcc aufgerufen haben, wurde im gleichen Verzeichnis eine Datei erstellt, die °helloworld.exe° heißt. Der Befehl °./helloworld.exe° besagt, dass die Datei °helloworld.exe° im derzeitigen Verzeichnis (der einzelne Punkt) ausgeführt werden soll. 
+

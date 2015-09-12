@@ -1,0 +1,384 @@
+\section{Eingabe und Ausgabe}
+
+\subsection{Einschub: Kommandozeilenargumente}
+Ein Programm, kann bei seinem Aufruf in der Kommandozeile zusätzliche Parameter als Zeichenfolgen übergeben bekommen. Um auf diese Parameter zugreifen zu können, ändern wir die Definition der °main°--Funktion zu
+\begin{codes}
+int main( int count, char **args );
+\end{codes}
+Das Betriebssystem übergibt dann bei Ausführung des Programms einen Array von Strings in °args° und dessen Länge in °count°. Die Strings °args[0]° bis °args[count-1]° enthalten dann die Kommandozeilenargumente. Betrachte etwa folgendes Programm °arg_print.c°:
+
+\begin{codes}
+#include <stdio.h>
+
+int main( int count, char **args ) {
+  int i;
+  for (i = 0; i < count; i++)
+    printf("Argument %i: %s\n",i,args[i]);
+  return 0;
+}
+\end{codes}
+
+Auf der Kommandozeile würde diese Code das folgende Ergebnis haben:
+
+\begin{alltt}
+\$ gcc -Wall -pedantic -o arg_print arg_print.c
+\$ ./arg_print Dies ist ein Test
+Argument 0: ./arg_print
+Argument 1: Dies
+Argument 2: ist
+Argument 3: ein
+Argument 4: Test
+\$ ./arg_print "Dies ist ein Test"
+Argument 0: ./arg_print
+Argument 1: Dies ist ein Test
+\end{alltt}
+
+Es fällt auf, dass °arg[0]° stets den Dateinamen des aufgerufenen Programms enthält. Auf diese Art und Weise kann einem Programm etwa der Dateiname einer Datei übergeben werden, mit der es arbeiten soll -- was uns zum eigentlichen Thema bringt.
+
+\newpage
+
+\subsection{Dateien öffnen}
+Um Dateien auszulesen oder zu beschreiben, muss man sie zunächst ``öffnen''. Damit teilt man dem Betriebssystem mit, dass von diesem Zeitpunkt an keine Änderungen an der Datei vorgenommen werden sollen (etwa durch andere Programme.) Dazu benötigt man aus dem Modul \headerfile{stdio.h} die Funktion °fopen° (für ``file open''):
+
+\begin{codes}
+FILE *fopen(char *pfad, char *modus);
+\end{codes}
+
+Der Pfad gibt an, wo auf der Festplatte die Datei liegt. Ein Pfad unter Windows wäre beispielsweise 
+
+\begin{verbatim}
+C:\Eigene Dateien\Dokumente\foo.txt
+\end{verbatim}
+
+und unter Linux etwa 
+
+\begin{verbatim}
+/home/rattle/dokumente/foo.txt
+\end{verbatim}
+
+Pfadangaben können auch ``relativ'' sein: Wenn sich in dem Ordner, in dem das Programm liegt, auch eine Datei \filename{foo.txt} befindet, so würde die Angabe des Strings °"foo.txt"° bei einem Aufruf von fopen genügen.
+
+Der Modus gibt zusätzliche Informationen darüber an, wie die Datei geöffnet werden soll. Der Modus kann eine der folgenden Zeichenketten sein:
+
+\vspace{0.5cm}
+
+\begin{tabular}{|c|p{12.5cm}|} \hline
+°"w"° & Erstellt die Datei und öffnet sie zum Schreiben. Vorsicht: Sollte sie bereits existieren, wird sie gelöscht und eine neue mit dem gleichen Namen erstellt. \\\hline
+°"r"° & Öffnet eine bereits existierende Datei zum Lesen. Sollte die Datei nicht existieren, wird °fopen° einen Nullpointer zurückgeben. \\\hline
+°"a"° & Sofern die Datei existiert, wird sie zum Schreiben ans Dateiende geöffnet. Andernfalls wird sie erstellt und zum Schreiben geöffnet. \\\hline
+°"w+"° & Verfährt wie °"w"° mit dem Unterschied, dass nach dem Öffnen auch aus der Datei gelesen werden kann. \\\hline
+°"r+"° & Verfährt wie °"r"° mit dem Unterschied, dass nach dem Öffnen auch in die Datei geschrieben werden kann. \\\hline
+°"a+"° & Verfährt wie °"a"° mit dem Unterschied, dass nach dem Öffnen auch aus der Datei gelesen werden kann. \\\hline
+\end{tabular}
+\vspace{0.5cm}
+
+Der Rückgabewert der Funktion ist ein sogenannter \df{Filepointer}. Dies ist ein Pointer auf eine sogenannte ``Struktur'' mit Namen °FILE°, in der das Betriebssystem Informationen über die derzeit geöffnete Datei speichert. Eine Struktur ist eine Zusammenfassung mehrerer Variablen unter einem Namen - dazu später mehr. Eine dieser Variablen ist der sogenannte \emph{Dateicursor}. Er gibt an, wo man sich gerade beim Arbeiten in der Datei befindet. Alle nun folgenden Lese- und Schreiboperationen beginnen an dieser Stelle in der Datei und verändern diesen Wert um die Anzahl der Zeichen, die gelesen bzw. geschrieben wurden: Daher erhalten alle Lese- und Schreibfunktionen einen Pointer auf die °FILE°-Struktur. Beim Öffnen einer Datei zum Lesen oder Schreiben ist der Dateicursor anfangs gleich $0$. Wird die Datei zum Schreiben ans Dateiende geöffnet, so verweist der Cursor direkt auf das Dateiende.
+
+Sollte das Öffnen der Datei fehlschlagen, so gibt °fopen° den Nullpointer zurück. Nachdem man eine Datei erfolgreich geöffnet und aus ihr gelesen oder sie beschrieben hat, muss man sie wieder schließen, damit von nun an andere Programme wieder frei über die Datei verfügen können. Dazu verwendet man die Funktion  
+
+\begin{codes}
+int fclose(FILE *fp);
+\end{codes}
+
+Die Verwendung der Funktion ist intuitiv klar. Der Rückgabewert gibt an, ob die Datei geschlossen werden konnte und ist bei Erfolg gleich $0$. Es treten in der Praxis jedoch beruhigender Weise so gut wie niemals Fehler beim Schließen von Dateien auf.
+
+
+
+\subsection{In Dateien schreiben}
+Um in eine zum Schreiben geöffnete Datei zu schreiben, stehen viele Funktionen zur Verfügung. Jede solche Funktion erhält unter anderem den Filepointer als Argument und verändert die dadurch referenzierte Struktur nach Beschreiben der Datei dahingehend, dass der Schreibvorgang beim nächsten Aufruf hinter den bereits geschriebenen Daten fortgesetzt wird. Die rudimentärste Funktion zum Schreiben in eine Datei ist
+
+\begin{codes}
+unsigned fwrite(
+  void     *buffer,
+  unsigned  size,
+  unsigned  count,
+  FILE     *fp
+);
+\end{codes}
+
+Sie liest °count° Speicherblöcke der Größe °size° von der Adresse °buffer° und schreibt diese in die durch °fp° geöffnete Datei. Die Rückgabe der Funktion gibt an, wie viele Speicherblöcke erfolgreich in die Datei geschrieben worden sind. Ist diese Zahl kleiner als °count°, so ist ein Fehler aufgetreten. Dies kommt selten vor.
+
+Da diese Funktion jedoch relativ unspezifisch ist, und das Schreiben formatierter Dateien ausgesprochen aufwendig macht, verwendet man zum Erstellen von Textdateien mit gewissem Format häufig die Funktion
+
+\begin{codes}[,label=code:deffprintf]
+int fprintf(FILE *fp, char *format, ...);
+\end{codes}
+
+Diese etwas seltsam anmutende Syntax wird nun im Detail erläutert. Die Funktion erhält als erstes Argument den Filepointer und als Zweites einen String, den sogenannten \df{Formatstring}. Dieser soll in die Datei geschrieben werden. Als weitere Argumente erhält die Funktion einige (beliebig viele) Expressions beliebigen Typs, welche als Zeichenketten formatiert und an bestimmten Stellen in den Formatstring eingefügt werden sollen.
+
+Zu diesem Zweck müssen im Formatstring an eben diesen Stellen Platzhalter der Form 
+\begin{alltt}
+    %\ph{FORMAT}
+\end{alltt}
+stehen. Diese werden durch die Textdarstellung der Expressions ersetzt, welche an °fprintf° übergeben wurde. Die Reihenfolge der Platzhalter im String muss natürlich der Reihenfolge der übergebenen Expressions entsprechen. Das \emph{Format} eines solchen Platzhalters hängt vom Datentyp der Variable ab, welche dort eingefügt werden soll, und von der gewünschten Art der Darstellung. Das letzte Zeichen des Formats ist ausschlaggebend für die Art der Darstellung und heißt daher \df{Formatzeichen}. Ein einfaches Beispiel:
+
+\begin{codes}
+fprintf(fp, "exp(%i) = %f.", 3, exp(3));
+\end{codes}
+
+Hier ist °i° das Formatzeichen zum Einfügen einer vorzeichenbehafteten Ganzzahl und °f° dasjenige zum Einfügen einer Fließkommazahl. Für die am häufigsten benötigten Formatzeichen konsultiere man die nun nachfolgende Tabelle:
+
+\vspace{0.5cm}
+\begin{tabular}{|l|p{21em}|l|} \hline
+\bfseries{Datentyp} & \bfseries{Darstellungsform} & \bfseries{Zeichen} \\\hline
+°signed int° & Ausgabe als vorzeichenbehaftete Ganzzahl (Verhält sich wie °d°). & °i° \\\hline
+°signed int° & Ausgabe als vorzeichenbehaftete Dezimalzahl. & °d° \\\hline
+°unsigned int° & Ausgabe als natürliche Ganzzahl & °u° \\\hline
+°unsigned int° & Ausgabe als Darstellung zur Basis $16$ & °X° \\\hline
+°unsigned int° & Ausgabe als Darstellung zur Basis $8$ & °o° \\\hline
+°float° & Ausgabe als Kommazahl & °f° \\\hline
+°float° & Ausgabe in wissenschaftlicher Notation &
+°e° \\\hline
+°char° & Ausgabe des kodierten Zeichens & °c° \\\hline
+°char*° & Einfügen des referenzierten Strings & °s° \\\hline
+°void*° & Ausgabe der Adresse, zur Basis 16 & °p° \\\hline
+\end{tabular}
+\vspace{0.5cm}
+
+Verwendet man die ``große'' Variante eines ganzzahligen Datentyps (also ein °long°), so sollte der Längenmodifikator °l° direkt vor das Formatzeichen gesetzt werden. Bei der ``kurzen'' Variante eines ganzzahligen Datentyps (also bei Verwendung des Ausdrucks °short°) sollte vor dem Formatzeichen ein °h° stehen. Ist die Größe des ganzzahligen Datentyps nicht explizit angegeben, so kann der Längenmodifikator weggelassen werden.
+Die exakte Form eines Formatausdrucks ist:
+
+\[\mathtt{
+°\%°\opt{\ °+°\ °-°\ °0° 
+\ \ph{WEITE}\ .\ph{PRÄZISION}
+\ \begin{array}{c}°l°\\°h°\end{array}}
+\ \ph{FORMATZEICHEN}}
+\]
+
+wobei übereinander geschriebene Elemente nicht gleichzeitig angegeben werden können. Wir wollen nun das Format im Detail und anhand von Beispielen erläutern. Für die Beispiele merken wir noch an, dass die Funktion
+
+\begin{codes}
+int printf(char *format, ...);
+\end{codes}
+
+exakt nach dem selben Schema arbeitet, wobei die formatierte Ausgabe hier nicht in eine Datei geschrieben wird, sondern auf der Konsole ausgegeben wird.
+
+\begin{description}
+\item[Weite] Dies muss eine ganze Zahl sein, welche die minimale Anzahl Zeichen angibt, welche für die Textdarstellung der entsprechenden Expression verwendet werden sollen. Einige Beispiele:
+
+\begin{codes}
+printf("Test: %3i",4);       /* Ausgabe: Test:   4   */
+printf("Test: %3i",10050);   /* Ausgabe: Test: 10050 */
+\end{codes}
+
+\item[Flags] Nach dem Prozentzeichen können beliebig viele der Flagzeichen geschrieben werden. 
+
+\begin{tabular}{|c|p{28.6em}|} \hline
+\bfseries{Flag} & \bfseries{Effekt}  \\\hline
+°-° & Innerhalb der angegebenen Weite \emph{links} ausrichten. Für gewöhnlich wird rechts ausgerichtet (siehe oben). \\\hline
+°+° & Bei vorzeichenbehafteten Zahlen \emph{immer} das Vorzeichen mit ausgeben. Für gewöhnlich würde das Vorzeichen nur bei negativen Zahlen angezeigt. \\\hline
+°0° & Mit Nullen anstatt mit Leerzeichen auffüllen, wenn die Ausgabe zu klein für die angegebene Weite ist. Wenn °0° und °-° zusammen angegeben werden, wird °0° ignoriert. \\\hline
+\end{tabular}
+
+\item[Präzision] Dies muss ebenfalls eine Ganzzahl sein (man beachte den führenden Punkt), welche nur für Ausgabe von Fließkommazahlen einen Effekt hat: Sie definiert die Anzahl der Nachkommastellen, die ausgegeben werden sollen. Beispiele:
+
+\begin{codes}
+#include <math.h>
+/*	... */
+printf("Test: %.3f.", sqrt(2));   /* Ausgabe: Test: 1.414.  */
+printf("Test: %.0f.", sqrt(2));   /* Ausgabe: Test: 1.      */
+\end{codes}
+
+\emph{Achtung:} Die Weite bezieht sich auf alle Zeichen der Stringdarstellung, inklusive Punkt!
+
+\begin{codes}
+printf("[%6.3f]", sqrt(2));  /* Ausgabe: [ 1.414]      */
+printf("[%7.3f]", sqrt(2));  /* Ausgabe: [  1.414]     */
+printf("[%7.3f]", 2.3);      /* Ausgabe: [  2.300]     */
+printf("[%7.9f]", 2.3);      /* Ausgabe: [2.300000000] */
+\end{codes}
+
+\item[Längenmodifikator] Der Längenmodifikator ist nur für ganzzahlige Argumente relevant, wie oben erläutert. Wenn man ein °double° ausgibt, so verwendet man das Formatzeichen °f° ohne Längenmodifikator. Die °double°--Expression wird dann in ein °float° gecasted und als ein solches ausgegeben.
+\end{description}
+
+Bei Angabe der Modifikatoren wird vorne mit Leerzeichen und hinten mit Nullen aufgefüllt, sofern nötig. Wenn man gerne vorne ebenfalls mit Nullen auffüllen möchte, kann man das Flag °0° verwenden (die Null ist das Flag, die °5° gibt die Weite an):
+ 
+\begin{codes}
+printf("[%05i]",100)  /* Ausgabe wird sein: [00100] */
+\end{codes}
+
+Die Funktionen °printf° und °fprintf° geben die Anzahl der Zeichen zurück, die erfolgreich ausgegeben bzw. in die Datei geschrieben worden sind. Dies sind je nach Formatierung der Variablen mehr (oder sogar weniger) Zeichen als die Länge des Formatstrings.
+
+\subsection{Dateien lesen}
+Um aus einer zum Lesen geöffneten Datei zu lesen, stehen auch viele Funktionen zur Verfügung. Jede solche Funktion erhält unter anderem den Filepointer als Argument. Wenn eine Anzahl $n$ an Bytes aus der Datei gelesen wurde, so verändert die Lesefunktion die Struktur, auf die der Filepointer verweist, dahingehend, dass der nächste Lesevorgang $n$ Bytes später durchgeführt wird. Die rudimentärste solche Funktion ist
+\begin{codes}
+unsigned fread(
+  void     *buffer,
+  unsigned  size,
+  unsigned  count,
+  FILE     *fp
+);
+\end{codes}
+
+Sie liest °count° Speicherblöcke der Größe °size° aus der Datei °fp° aus und speichert diese an die Stelle im Speicher, auf die °buffer° zeigt. Die Rückgabe der Funktion gibt an, wie viele Speicherblöcke erfolgreich aus der Datei gelesen und in den Speicher kopiert worden sind. Ist diese Zahl kleiner als °count°, so wurde das Dateiende frühzeitig erreicht. Man kann auf diese Weise überprüfen, wann man den gesamten Inhalt einer Datei ausgelesen hat, indem man den Rückgabewert der Funktion mit dem übergebenen Wert °count° vergleicht. Da diese Funktion jedoch relativ unspezifisch ist, und das Auslesen formatierter Dateien ausgesprochen aufwendig macht, verwendet man im Fall von Textdateien mit gewissem Format häufig die Funktion
+
+\begin{codes}
+int fscanf(FILE *fp, char *format, ...);
+\end{codes}
+
+Diese Funktion verhält sich nahezu analog zu °fprintf°(siehe \ref{code:deffprintf}): Aus der Datei werden Zeichen gelesen, die exakt dem durch Formatstring °format° angegebenen Format entsprechen müssen. Auch in diesem Formatstring tauchen Formatausdrücke der Form °%FORMAT°
+auf. Zeichen des Formatstrings, die kein Formatausdruck sind, werden von °fscanf° einfach überlesen. Wenn im Formatstring ein Zeichen angegeben ist, welches an dieser Stelle nicht in der Datei steht, so bricht °fscanf° an dieser Stelle den Vorgang ab. An den Stellen, an denen im Formatstring Formatausdrücke auftauchen, erwartet °fscanf° in der Datei entsprechend formatierte Zeichenketten, welche dann in C-Expressions übersetzt werden. Die weiteren Argumente von °fscanf° sind Pointer auf Variablen, welchen diese Expressions in entsprechender Reihenfolge zugewiesen werden. Der Rückgabewert von °fscanf° gibt die Anzahl der \emph{erfolgreich} zugewiesenen Werte zurück -- oder die Konstante °EOF°, falls ein Fehler auftritt. Dies ist der Fall, wenn etwa das Ende der Datei zu früh erreicht wurde oder ein Zeichen im Formatstring vorkommt, welches in der Datei nicht an der entsprechenden Stelle steht. Noch einige Bemerkungen zum Umgang von °fscanf° mit Whitespace\footnote{Whitespace sind Leerzeichen, Tabulatoren und Zeilenumbrüche.}:
+\begin{itemize}
+\item Falls ein Whitespace-Zeichen im Formatstring vorkommt, so darf an der entsprechenden Stelle in der Datei eine beliebige Anzahl beliebiger, aufeinanderfolgender Whitespace-Zeichen stehen -- insbesondere auch gar keines.
+\item Falls in der Datei ein Whitespace-Zeichen vorkommt, ohne dass im Formatstring an der entsprechenden Stelle ein Formatausdruck oder Whitespace angegeben ist, so bricht die Funktion frühzeitig ab.
+\item Beim Einlesen eines Formatausdrucks werden führende Whitespace-Zeichen von °fscanf° einfach überlesen.
+\end{itemize}
+
+Wir wollen nun das Format noch vollständig erklären. Die Formatausdrücke im Formatstring sind bei °fscanf° von der Form:
+
+\[\mathtt{
+°\%°\ \opt{°*° 
+\ \ph{WEITE}
+\ \begin{array}{c}°l°\\°h°\end{array}}\ \ph{FORMATZEICHEN}}
+\]
+
+\begin{description}
+\item[Weite] Dies gibt die maximale Anzahl Zeichen an, die °fscanf° zum Einlesen dieses Feldes verwendet:
+
+\begin{codes}
+int year;
+printf("Bitte Jahreszahl (vierstellig) eingeben: ");
+scanf("%4i", &year); /* lies die nächsten 4 Ziffern */
+\end{codes}
+
+Zum Einlesen von Variablen ist es nicht erforderlich, die Weite anzugeben. Für gewöhnlich liest °fscanf° so viele Zeichen ein, wie für einen Ausdruck des angegebenen Typs sinnvoll möglich sind. 
+
+\item[Flags] Es gibt nur das Sternchen °*° als Flag für °fscanf°--Formate. Es bedeutet, dass an dieser Stelle zwar ein Ausdruck im angegebenen Format ausgelesen werden soll, dieser jedoch nirgendwo gespeichert wird. Zu einem so markierten Formatausdruck darf selbstverständlich kein Pointer als weiteres Argument an °fscanf° übergeben werden.
+
+\item[Längenmodifikator] Der Längenmodifikator muss für ganzzahlige \emph{und} Fließkommadatentypen angegeben werden: Die Typen °long° und °double° erfordern den Modifikator °l°, der Typ °short° erfordert den Modifikator °h°.
+
+\item[Formatzeichen] Die Formatzeichen sind die gleichen wie bei °fprintf°. Darüber hinaus ermöglicht °fscanf° noch einige weitere Optionen zum Einlesen von Strings, auf welche wir hier nicht eingehen können.
+\end{description}
+
+\emph{Achtung}: Beim Einlesen von Ganzzahlen mittels °%i° ermittelt °fscanf° die Art der Zahldarstellung nach den gleichen Regeln wie in \ref{elementare_sprachkonstrukte:numerische_konstanten}. Insbesondere wird eine führende °0° so interpretiert, dass eine Zahl im Oktalsystem vorliegt. Verwendet man das Format °%d°, so wird °fscanf° angewiesen, die Zahl auf jeden Fall im Dezimalsystem einzulesen.
+
+Wir wollen nun ein Beispiel für die Verwendung von °fscanf° und °printf° geben. Sei eine Datei mit folgendem Inhalt gegeben:
+
+\begin{codes}
+    exp(-5) = 0.01
+    exp(-4) = 0.0183156
+    exp(-3) = 0.0497
+    exp(-2) = 0.135335
+    exp(-1) = 0.3678794412
+    exp(0) = 1
+    exp(1) = 2.7182818285
+    exp(2) = 7.389
+    exp(3) = 20.08
+    exp(4) = 54.5
+    exp(5) = 148.41315
+    exp(6) = 400.0
+\end{codes}
+
+Dann könnte man mit folgendem Programm den Fehler in jedem Funktionswert ermitteln (natürlich nur im Rahmen der Maschinengenauigkeit):
+
+\begin{codes}
+#include <stdio.h>
+#include <math.h>
+
+int main ( int count, char **args ) {
+  double d;
+  signed i;
+  FILE *f;
+  if ( count < 1 ) {
+    printf("Bitte Dateinamen angeben.\n");
+    return 1;
+  }
+  if ( (f = fopen(args[1],"r")) != NULL ) {
+    while (fscanf(f,"exp(%i) =%lf\n",&i,&d) == 2)
+      printf("Fehler bei exp(%2i) ist %le\n",i,d-exp(i));
+    fclose(f);
+    return 0;
+  } else {
+    printf("Konnte Datei nicht öffnen\n");
+    return 1;
+  }
+}
+\end{codes}
+
+Das Programm erwartet als ersten Kommandozeilenparameter den Namen der oben angegebenen Datei. Es fällt auf, das sich die Funktionswerte nach dem Gleichheitszeichen auch einlesen lassen, obwohl im Formatstring danach kein Leerzeichen steht. Das liegt daran, das führende Leerzeichen mit zur formatierten Darstellung einer Zahl gehören können und somit von °fscanf° gefressen werden, bis tatsächlich Ziffern folgen. 
+
+Um zu überprüfen, ob die letzte Leseoperation das Ende der Datei erreicht hat, kann man die folgende Funktion verwenden: 
+
+\begin{codes}
+int feof(FILE *fp);
+\end{codes}
+
+Sie gibt einen Wert ungleich $0$ zurück, falls beim letzten Lesen das Ende der Datei erreicht wurde und $0$, falls noch weitere Daten aus der Datei gelesen werden können.
+
+\subsection{Byteweiser Dateizugriff}
+Manchmal möchte man nur ein einzelnes Byte in eine Datei schreiben oder ein einzelnes Byte aus einer Datei auslesen. Dazu gibt es die Funktionen
+
+\begin{codes}
+int fgetc(FILE *fp);
+\end{codes}
+
+und 
+
+\begin{codes}
+int fputc(int c, FILE *fp);
+\end{codes}
+
+wobei die Namen jeweils für ``file get char'' und ``file put char'' stehen. 
+Von dem an °fputc° übergebene °int° wird wie bei °memset° (siehe \ref{code:defmemset}) natürlich nur das unterste Byte verwendet. Als Rückgabe liefert °fputc° die Anzahl der geschriebenen Bytes - also  $1$ bei Erfolg und $0$ bei einem Fehler. Die Funktion °fgetc° gibt entweder das ausgelesene Byte zurück (als °int°) oder den Fehlerwert °EOF°. 
+Um die Funktionsweise der bereits vorgestellten Funktionen zu Verdeutlichen zeigen wir an dieser Stelle, wie diese beiden Funktionen implementiert sein könnten:
+
+\begin{codes}
+int fgetc(FILE *fp) {
+  char c;
+  if (fscanf(fp, "%c", &c) == 1) return c;
+  else return EOF;
+}
+\end{codes}
+\begin{codes}
+int fputc(int c, FILE *fp) {
+  return fprintf(fp, "%c", c);
+}
+\end{codes}
+
+Hier ist eine weitere, dazu äquivalente Implementierung unter Verwendung von °fread° bzw. °fwrite°:
+
+\begin{codes}
+int fgetc(FILE *fp) {
+  char c;
+  if (fread(&c, 1, 1, fp) == 1) return c;
+  else return EOF;
+}
+\end{codes}
+
+\begin{codes}
+int fputc(int c, FILE *fp) {
+  return fwrite(&c, 1, 1, fp);
+}
+\end{codes}
+
+\subsection{Den Dateicursor verändern}
+Der Dateicursor ist ein Zahlenwert, der in der °FILE° Struktur einer geöffneten Datei gespeichert wird. Er gibt an, wie weit man sich vom Anfang der Datei befindet - Führt man eine Schreib- oder Leseoperation auf der geöffneten Datei aus, so werden die Bytes immer von dieser Stelle an gelesen bzw. geschrieben. Wie bereits angedeutet verändern Schreib- und Leseoperationen gleichermaßen den Dateicursor. Man kann den Dateicursor jedoch auch durch folgende Funktion verändern:
+
+\begin{codes}
+int fseek(FILE *fp, int k, int origin);
+\end{codes}
+
+Die Funktion setzt den Dateicursor auf °k°, wenn man für °origin° die Konstante °SEEK_SET° verwendet. In diesem Fall darf °k° natürlich keine negativen Werte annehmen. Verwendet man für °origin° die Konstante °SEEK_CUR°, so wird °k° zum Dateicursor addiert. In diesem Fall kann °k° auch negativ sein, wir verschieben den Cursor bildlich gesprochen in der Datei zurück. Schlussendlich kann für °origin° auch die Konstante °SEEK_END° angegeben werden, um den Cursor relativ zum Ende der Datei zu setzen. Dafür sind selbstverständlich nur negative Werte von °k° zulässig. Wenn der Dateicursor erfolgreich verändert wurde, gibt die Funktion $0$ zurück, andernfalls nicht. 
+
+\newpage
+
+Möchte man den Wert des Dateicursors auslesen, so kann man die Funktion
+
+\begin{codes}
+int ftell(FILE *fp);
+\end{codes}
+
+verwenden, welche den Wert des Dateicursors zurückliefert. Damit lässt sich nun unter anderem die Länge einer Datei wie folgt bestimmen:
+
+\begin{codes}
+int flength(FILE *fp) {
+  int temp,length;
+  temp = ftell(fp);
+  if (!fseek(fp, 0, SEEK_END)) {
+    length = ftell(fp);
+    fseek(fp, temp, SEEK_SET);
+  } 
+  else length = -1; /* Fehlerwert */
+  return length;
+}
+\end{codes}

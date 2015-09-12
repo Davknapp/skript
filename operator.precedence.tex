@@ -1,0 +1,67 @@
+\section{Operatorpräzedenzen}
+
+Wenn beim Auswerten einer Expression in C nicht klar ist, wie geklammert werden muss, hält sich der Compiler an sogenannte Operatorpräzedenzen. Operatoren mit höherer Präzedenz werden vor denen mit niedrigerer Präzedenz angewandt: So haben etwa arithmetische Punkt-Operationen eine höhere Präzedenz als arithmetische Strich-Operationen (Punkt- vor Strichrechnung). 
+
+\vspace{1ex} Im Folgenden sind die C-Operatoren ihrer Präzedenz nach absteigend sortiert. Operatoren gleicher Präzedenz sind durch vertikale Trennlinien gruppiert.
+
+%\begin{table}[H] \centering
+\vspace{2ex}
+\begin{tabularx}{\textwidth}{p{.8in}p{1.9in}|p{2.55in}} \hline 
+\bfseries{Operator} & \bfseries{Wirkung} & \bfseries{Erklärung} \\\hline
+°()° & Funktionsaufruf & Seite \pageref{Op:Funktionsaufruf} \\
+°[]° & Indizierung & Seite \pageref{Op:Index} \\
+°.°  & Feldauswahl & Seite \pageref{Op:FeldZugriff} \\
+°->° & Feldauswahl bei Pointern auf Strukturen & Seite \pageref{Op:Pfeil}  \\
+°++° & Postfix Inkrementierung & Seite \pageref{Op:IncDec} \\
+°----° & Postfix Dekrementierung & Seite \pageref{Op:IncDec} \\ \hline
+°++° & Präfix Inkrementierung & Seite \pageref{Op:IncDec} \\
+°----° & Präfix Dekrementierung & Seite \pageref{Op:IncDec} \\ 
+°-° & Unäres Minus & Der Wert von °-a° ist das Negative von °a°. \\
+°~° & Bitweises Komplement & Der Wert von °~a° ist der Wert, den man erhält, wenn man alle Bits von °a° invertiert.  \\
+°!° & Logische Verneinung & Tabelle \ref{table:logischeoperatorenwerte} auf Seite \pageref{table:logischeoperatorenwerte} \\
+°(°\ph{°TYP°}°)° & Typecasting & Seite \pageref{Op:Typecast} \\
+°*° & Dereferenzierungsoperator & Seite \pageref{Op:Deref} \\
+°&° & Adressoperator & Seite \pageref{Op:Adresse} \\
+°sizeof° & Größenbestimmung & Seite \pageref{Op:Sizeof} \\
+\hline
+\end{tabularx} 
+
+\begin{tabularx}{\textwidth}{p{.8in}p{1.9in}|p{2.55in}}
+\hline
+°*° & Multiplikation & Tabelle \ref{table:operatorentabelle:arithmetisch} auf Seite \pageref{table:operatorentabelle:arithmetisch} \\
+°/° & Division & \\
+\% & Modulo-Operation & \\
+\cline{1-2}
+°+° & Addition & \\
+°-° & Subtraktion & \\
+\hline
+°>°°>° & Bitweiser Rechtsshift & Bei °a>°°>n° sind die Bits von °a° um °n° Stellen nach rechts verschoben und von links mit Nullbits aufgefüllt. Es entspricht einer Ganzzahldivision durch $2^n$.  \\
+°<°°<° & Bitweiser Linksshift & Ähnlich wie oben, °a<°°<n° entspricht einer Multiplikation von °a° mit $2^n$. \\
+\hline
+°<° \quad °<=°  & Vergleiche & Tabelle \ref{table:vergleichsoperatoren} auf Seite \pageref{table:vergleichsoperatoren} \\
+°>° \quad °>=° & (Größer/Kleiner) &\\
+\hline 
+°==° & Vergleiche & Tabelle \ref{table:vergleichsoperatoren} auf Seite \pageref{table:vergleichsoperatoren} \\
+°!=° & (Gleich/Ungleich) & \\ \hline
+°&°  & Bitweises Und & 
+\multirow{3}{2.55in}{Verknüpft die Bits der beiden Operanden einzeln mit der jeweiligen Operation.}  \\ \cline{1-2}
+°^°  & Bitweises, exklusives Oder  & \\ \cline{1-2}
+°|°  & Bitweises, inklusives Oder  & \\ \hline
+°&&° & Logisches Und  & Tabelle \ref{table:logischeoperatoren} auf Seite \pageref{table:logischeoperatoren} \\ \cline{1-2}
+°||° & Logisches Oder & \\ \hline
+°?:° & Bedingte Auswertung & Siehe Seite \pageref{Op:Bedingt} \\ \hline
+°=° & Zuweisung & Seite \pageref{Op:Zuweisung} \\
+$\times$°=° & Kurzschreibweisen & Seite \pageref{Op:Kurz} \\
+\hline
+°,° & Komma & Seite \pageref{Op:Komma} \\ \hline
+\end{tabularx}
+%\end{table} 
+\vspace{2ex}
+
+\emph{Anmerkungen:}
+
+\vspace{1ex} Die Operanden aller binären Operationen werden von links nach rechts ausgewertet, mit Ausnahme des \emph{Zuweisungsoperators}: Hier wird von rechts nach links ausgewertet.
+
+\vspace{1ex} Eine Postfix-Inkrementierung bzw. -Dekrementierung darf vom Compiler bis zum nächsten \emph{Statement} verzögert werden und muss nicht durchgeführt werden, sobald die entsprechende Expression ausgewertet wird. Die Rechnung °y = x * x++° würde also unter Umständen nicht $(x+1)\cdot x$, sondern $x^2$ berechnen und in °y° speichern.
+
+

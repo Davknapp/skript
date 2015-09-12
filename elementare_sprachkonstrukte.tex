@@ -1,0 +1,331 @@
+\section{Elementare Sprachkonstrukte}
+\subsection{Kommentare}
+Obgleich Programmiersprachen gedacht sind, um dem Menschen verständlicher zu sein als der kryptische Maschinencode, können nur die wenigsten von uns C-Quellcode wie ein lustiges Taschenbuch lesen. Daher möchte man häufig an verschiedenen Stellen im Quellcode sogenannte \df{Kommentare} einfügen, d.h. Erläuterungen und Erklärungen zum Programm, welche nicht vom Compiler als Befehle interpretiert werden sollen. Um einen Kommentar zu beginnen, verwendet man die Zeichenfolge °/*° und beendet ihn durch die Zeichenfolge °*/°. Ein Beispiel:
+
+\begin{codes}[Hallo-Welt-Programm mit Kommentaren,label=hworld_with_comments]
+/* HelloWorld v2.1a
+   (c) 2008 by Jesko & Lars */
+#include <stdio.h>
+int main() {
+  printf("Hello World\n");
+  return 0; /* Programm fehlerfrei beendet */
+} 
+\end{codes}
+
+\subsection{Variablen}
+Ganz abstrakt ist ein Programm eine Maschinerie, die gewisse Daten erhält, und daraus neue Daten auf eine bestimmte Art und Weise berechnet. Daten treten in einem Programm stets in Form von sogenannten \df{Variablen} auf. Dabei ist eine Variable der Name für eine zusammenhängenden Region im Speicher des Computers, die durch ihren Datentyp eine Interpretation der dort gespeicherten Bits zugewiesen bekommt. Durch den Namen lässt sich im C-Programm die Speicherregion auslesen oder neu beschreiben. Der Programmierer kann sich zu Beginn eines Programmblocks wie folgt Variablen deklarieren (erstellen):
+
+\begin{alltt}
+    \ph{DATENTYP} \ph{NAME}\opt{ = \ph{WERT}};
+\end{alltt}
+
+Wann immer wir Definitionen wie oben angeben, so bedeutet ein unterstrichenes Wort, dass an dieser Stelle verschiedenes stehen kann. Für \ph{°NAME°} etwa wird der \df{Name} eingefügt, welchen die Variable haben soll. Dies ist eine beliebige Zeichenfolge aus Buchstaben, Ziffern und Unterstrichen, welche nicht mit einer Ziffer beginnt. Der Name der Variablen sollte Aufschluss über ihren Zweck im Programm liefern. Variablennamen mit nur einem Buchstaben, obgleich in der Mathematik sehr verbreitet, sorgen bei Programmen in den meisten Fällen nur für Verwirrung. Ist ein Teil einer Definition grau gefärbt, so ist dieser Teil optional. Wir bemerken, dass das Semikolon oben nicht mehr optional ist.
+
+Tabelle \ref{table:datentypentabelle} gibt Aufschluss über die zur Verfügung stehenden \df{Datentypen}, welche für \ph{°DATENTYP°} eingesetzt werden können. Ein °int° beansprucht stets weniger oder genauso viel Speicher wie ein °long int° und stets mehr oder genauso viel Speicher wie ein °short int°. Die gewöhnliche Größe in Bits, die ein °int° belegt, hat sich im Laufe der Jahrzehnte von $16$ über $32$ zu mittlerweile $64$ Bits gesteigert und könnte sich in der Zukunft weiter ändern. 
+
+Wir wollen noch etwas genauer verstehen, wie die verschiedenen ganzzahligen Datentypen zusammenhängen. Die Begriffe °signed° und °unsigned° sowie °short° und °long° sind bei der Deklaration einer °int°--Variablen optional. Wird einer der Ausdrücke nicht angegeben, so wird ein vom Computer und vom Betriebsystem abhängiger Standard gewählt. Sollte allerdings einer dieser Begriffe angegeben werden, so kann °int° selbst weggelassen werden, etwa so:
+\begin{codes}
+    unsigned x;
+\end{codes}
+
+\begin{table} \centering
+\begin{tabular}{|l|l|l|} \hline 
+\bfseries{Variablentyp} & \bfseries{Deklaration} & \bfseries{Ausgabebefehl} \\\hline
+Ganzzahl & °int v;° & °printf("%i\n", v);° \\\hline
+Kleine Ganzzahl & °signed short int v;° & °printf("%hi\n", v);° \\\hline
+Große Ganzzahl & °signed long int v;° & °printf("%li\n", v);° \\\hline
+Ganzzahl $\ge 0$ & °unsigned int v;° & °printf("%u\n", v);° \\\hline
+Kleine Ganzzahl $\ge 0$ & °unsigned short int v;° & °printf("%hu\n", v);° \\\hline
+Große Ganzzahl $\ge 0$ & °unsigned long int v;° & °printf("%lu\n", v);° \\\hline
+Byte (8 Bit) & °char c;° & °printf("%c\n", c);° \\\hline
+Kleine Fließkommazahl  & °float f;° & °printf("%f\n", f);° \\\hline
+Große Fließkommazahl & °double d;° & °printf("%f\n", d);° \\\hline
+\end{tabular}
+\label{table:datentypentabelle}
+\caption{Die Funktion printf wird später genau erläutert werden}
+\end{table}
+
+Optional kann einer Variablen bereits bei der Deklaration ein \emph{Wert} zugewiesen werden. Diesen Vorgang bezeichnet man als \df{Initialisierung} der Variablen. Beispiel: 
+
+\begin{codes}
+    unsigned long pi = 3;  /* pi wird zu 3 initialisiert */
+    unsigned long x;       /* x ist undefiniert */
+    unsigned long y = pi;  /* y wird zu pi initialisiert */
+\end{codes}
+
+Achtung: Wird eine Variable nicht initialisiert, so ist sie \df{undefiniert}: Es ist unvorhersehbar, welchen Wert sie hat. Will man mehrere Variablen vom gleichen Typ deklarieren, so ist dies auch möglich, indem man sie nach Angabe des Datentyps lediglich durch Kommata trennt. Damit ist
+\begin{codes}
+    unsigned long pi = 3, x, y = pi; 
+\end{codes}
+eine Kurzschreibweise für den Quellcode oben.
+
+\subsection{Numerische Konstanten} \label{elementare_sprachkonstrukte:numerische_konstanten}
+Ganzzahlige Konstanten sind uns bereits bei der Initialisierung von Variablen oben begegnet. Sie werden einfach als Folge von Ziffern in den Code eingegeben. Dabei können Zahlen zu unterschiedlichen Basen angegeben werden, nach folgender Regel:
+\begin{enumerate}
+\item Beginnt die Ziffernfolge \emph{nicht} mit der Ziffer °0°, so wird sie als ``gewöhnliche'' Zahlendarstellung im Dezimalsystem verstanden. 
+\item Andernfalls, wenn die Ziffernfolge mit °0x° beginnt, so dürfen außer normalen Ziffern auch die Buchstaben °A° bis °F° in der Zahldarstellung verwendet werden. Diese wird dann als \df{Hexadezimalzahl} (Darstellung zur Basis $16$) interpretiert.
+\item Andernfalls, wenn die Ziffernfolge mit °0° beginnt, wird sie als \df{Oktalzahl} (Darstellung zur Basis $8$) verstanden. In diesem Fall sind die Ziffern °8° und °9° nicht erlaubt.
+\end{enumerate}
+Dies ist insbesondere wichtig zu wissen, um Fehler zu vermeiden:
+\begin{codes}
+int x1 = 210; /*          x1 hat den Wert 210 */
+int x2 = 070; /* Achtung: x2 hat den Wert 56  */
+\end{codes}
+Allerdings haben Konstanten auch einen Datentyp: Dieser Datentyp ist durch die Darstellung der Konstanten im Quellcode gegeben. Damit eine Konstante nicht als Ganzzahl, sondern als Fließkommazahl interpretiert wird, so muss sie einen Punkt zwischen den Vorkomma- und Nachkommastellen enthalten. Zusätzlich kann man wissenschaftliche Notation verwenden, was wir lediglich an einem Beispiel verdeutlichen wollen: 
+\begin{codes}
+  double pi = 3.141592653539793;  /* Kommadarstellung für ~Pi */
+  double  c = 2.99792458e8;       /* wissenschaftliche Notation für ~Lichtgeschwindigkeit */ 
+\end{codes}
+Man kann Stellen vor und nach dem Punkt auch weglassen, diese werden dann automatisch zu $0$. Beispiel:
+\begin{codes}
+  double half = .5;
+\end{codes}
+\emph{Anmerkung}: Fließkommazahlen können ausschließlich als Darstellung zur Basis $10$ angegeben werden. Führende Nullen werden bei der Angabe von Fließkommakonstanten einfach ignoriert.
+
+\subsection{Operatoren und Expressions} \label{sec:operatoren_und_expressions}
+Eine \df{Expression} in C steht für einen Teil des Codes, welcher, ganz anschaulich ausgedrückt, einen Wert hat. Eine Variable ist beispielsweise bereits eine Expression, genau wie Konstanten.
+
+Alle anderen Expressions in C entstehen aus Konstanten und Variablen durch deren Verknüpfung mittels \df{Operatoren} und Klammerung. Abstrakt ausgedrückt ordnet ein Operator einem oder mehreren Werten einen neuen Wert zu. So sind etwa alle Grundrechenarten
+
+\begin{table}[H] \centering
+\begin{tabular}{|l|c|l|} \hline 
+\bfseries{Operator} & \bfseries{Expression} & \bfseries{Wert der Expression} \\\hline
+Addition & °a + b° & Summe von °a° und °b°  \\\hline
+Subtraktion & °a - b° & Differenz von °a° und °b°  \\\hline
+Multiplikation & °a * b° & Produkt von °a° und °b°  \\\hline
+Division & °a / b° & Quotient von °a° und °b° \\\hline
+Modulo & °a % b° & Rest einer Ganzzahldivision von °a° durch °b° \\\hline
+\end{tabular}
+\label{table:operatorentabelle:arithmetisch}
+\caption{Arithmetische Operatoren}
+\end{table}
+sogenannte \df{binäre} Operatoren (da sie zwei Werten einen Neuen zuweisen, nämlich gerade das Rechenergebnis). Beispiele für Expressions sind °3+5*9° und °(pi+5)*9°. Dabei gilt wie gewohnt: ``Punkt- vor Strichrechnung''. Der Wert der Expression ist dann natürlich das Gesamtergebnis (beim ersten Beispiel also °48° und beim Zweiten °72°). Wir werden im Laufe des Kurses außer den Grundrechenarten noch viele weitere Operatoren kennen lernen. Der Wert einer Expression kann durch den \df{Zuweisungsoperator} ``°=°'' \label{Op:Zuweisung} in einer Variablen gespeichert werden:
+
+\begin{codes}
+    pi = (pi+5)*9;  /* setzt die Variable pi auf (pi+5)*9 */
+\end{codes}
+
+Der Zuweisungsoperator entspricht also nicht dem mathematischen Gleichheitszeichen, sondern wird gelesen als ``wird gesetzt auf''. Wer sich nun fragt, warum dies ein Operator sein soll, sei gesagt, dass eine Zuweisung in C auch einen Wert hat, nämlich gerade den Wert, der zugewiesen wird. Damit ist folgender Code korrekt:
+
+\begin{codes}
+    x = pi = x+5*9; /* entspricht x = (pi=x+5*9); */
+\end{codes}
+
+Hier wird also zunächst der Wert von °(x+45)° in der Variablen °pi° gespeichert -- das Ergebnis dieser Zuweisungsoperation ist wiederum °(x+45)°, welches dann nach x geschrieben wird. Man sagt auch, der Zuweisungsoperator hat einen \df{Nebeneffekt}, da er nicht nur einen Wert zurückgibt, sondern in Folge seiner Auswertung auch den Inhalt einer Speicherzelle verändert.  
+Da jede Expression einen Wert hat, hat sie auch einen Datentyp. Gelegentlich möchte man durch Operatoren auch Expressions verknüpfen, die formal unterschiedliche Datentypen haben -- in diesem Fall muss eine der Expressions in eine Expression vom anderen Typ konvertiert werden. Diesen Vorgang nennt man \df{typecasting}. In vielen Fällen, wie etwa der Verknüpfung zweier Expressions mit Ganzzahltypen, nimmt C diese Konvertierung automatisch und meistens auch so vor, wie man es sich wünscht. Möchte man dennoch manuell eine Typkonvertierung durchführen, so geschieht dies durch folgende Syntax: \label{Op:Typecast}
+\begin{alltt}
+    (\ph{DATENTYP}) (\ph{EXPRESSION})
+\end{alltt}
+Als Beispiel könne man etwa eine Fließkommazahlen in eine Ganzzahl konvertieren, indem man schreibt:
+\begin{codes}
+	double pi = 3.14159;
+	unsigned n = (unsigned) pi;
+\end{codes}
+Die Konvertierung von Fließkommazahlen in Ganzzahlen geschieht durch Runden in Richtung $0$. All dies wirft ein neues Licht auf die oben vorgestellten Rechenoperationen: Diese haben nämlich, abhängig vom Typ ihrer Argumente, eine unterschiedliche Arbeitsweise.
+
+
+
+\begin{itemize}
+\item Dividieren wir zwei Ganzzahlen, so wird eine Ganzzahldivision durchgeführt und der dabei entstehende Rest verworfen; also ergibt °1/2° den Wert °0° und °7/3° hätte den Wert °2°. Durch explizites Typecasting lässt sich hier ein anderes Verhalten erzwingen schaffen:
+\begin{codes}
+    unsigned x = 1, y = 2;
+    double half = (double)x/y; /* nun hat half den Wert 0.5 */
+\end{codes}
+\item Dividiert man eine Ganzzahl durch eine Fließkommazahl oder umgekehrt, so wird die Ganzzahl konvertiert und man erhält das (mehr oder minder) korrekte Ergebnis der Rechnung als Fließkommazahl.
+\item Generell gilt: Verknüpfen wir eine Fließkommazahl mit einer Ganzzahl, so wird diese in eine Fließkommazahl konvertiert, und das Ergebnis ist ebenfalls eine Fließkommazahl.
+\end{itemize}
+
+Es gibt nun noch einen weiteren nützlichen Rechenoperator, der bei einer Ganzzahldivision das Ergebnis verwirft und statt dessen den Rest als Ergebnis liefert: Der sogenannte \df{Modulo}-Operator, °%° (ein Prozentzeichen). So wäre etwa °(6%5)° eine Expression mit dem Wert °1°. Dieser Operator funktioniert nur mit Ganzzahlen.
+
+Häufig hat man in der Programmierung Zuweisungen der Form °a = a °$\times$° b°, wobei $\times$ einer der bisherigen, binären Rechenoperatoren ist. Dafür gibt es die Kurzschreibweise °a °$\times$°= b° \label{Op:Kurz}. Ein Beispiel: °a += 1° würde den Wert von °a° um °1° erhöhen. Die Situation, eine Variable um  zu de- oder inkrementieren, ergibt sich sehr häufig. Dafür verwendet man folgenden unären Operatoren \label{Op:IncDec}.
+
+\begin{table} [H] \centering
+\label{table:kurzschreibweisen}
+\begin{tabular}{|c|c|l|c|} \hline 
+\bfseries{Operator} & \bfseries{Art} & \bfseries{Wirkung} & \bfseries{Wert der Expression} \\\hline
+°a++° & postfix & inkrementiere °a° & °a° \\\hline
+°++a° & präfix & inkrementiere °a° & °a+1° \\\hline
+°a--° & postfix & dekrementiere °a° & °a° \\\hline
+°--a° & präfix & dekrementiere °a° & °a-1° \\\hline
+	\end{tabular}
+\caption{Kurzschreibweisen}
+\end{table}
+
+\emph{Anmerkung:} Es gibt Expressions, welche aufgrund ihrer Nebeneffekte nicht eindeutig sind, etwa °i=i+++i°. Diese Expression ist syntaktisch korrekt, doch es gibt keinen offiziellen Standard für ihren Wert. Man bezeichnet solche Expressions als \df{undefiniert}. Jeder Compiler hat bei derartigen Situationen das Recht, über die weitere Verfahrensweise zu entscheiden (Er könnte etwa die Expression auf eine mögliche Art und Weise auswerten oder einen Fehler erzeugen). Man sollte solche Expressions tunlichst vermeiden.
+
+
+
+\subsection{Formalitäten: Statements und Expressions}
+C-Programme setzen sich aus einer oder mehreren \df{Statements} zusammen. Wir haben bereits ein Statement kennen gelernt: Die Variablendeklaration. Außerdem kann man eine Expression zu einem Statement machen, indem man sie durch ein Semikolon abschließt. Ein Beispiel dafür ist die Zuweisung, die wir bereits in \ref{sec:operatoren_und_expressions} kennen gelernt haben. Darüber hinaus kann man auch eine \df{Expressionliste} als Statement auswerten lassen: Dies ist eine durch Kommata separierte Liste von Expressions, welche durch ein abschließendes Semikolon zu einem Statement führt, in dem die Expressions der Reihe nach ausgewertet werden:
+
+\begin{alltt}
+    \ph{EXPRESSION 1}, \ph{EXPRESSION 2}, \ldots, \ph{EXPRESSION n};
+\end{alltt}
+Dies scheint zunächst nicht besonders nützlich zu sein, da wir die einzelnen Expressions durch Semikolons auch einzeln zu Statements machen können -- im Zusammenspiel mit anderen Statements jedoch kann es sich als nützlich erweisen, mehrere Expressions als ein { \itshape einzelnes} Statement zusammenfassen zu können. In Wahrheit ist eine Expressionliste ebenfalls eine Expression: Das Komma ist ein binärer Operator \label{Op:Komma}, welcher seine beiden Argumente auswertet und den zweiten als Ergebnis liefert: Wert und Typ einer Expressionliste sind also immer Wert und Typ der letzten Expression in der Liste.
+
+Ein weiteres, bereits bekanntes Statement ist der \df{Block}, welcher einfach mehrere Statements zu einem Statement zusammenfasst:
+
+\begin{alltt}
+    \{ \ph{STATEMENT 1} \ph{STATEMENT 2} \ldots \ph{STATEMENT n} \}
+\end{alltt}
+
+Wichtig: Variablendeklarationen sind Statements, die nicht an jeder Stelle des Quellcodes verwendet werden dürfen. Variablendeklarationen müssen immer \emph{die ersten Statements eines Blocks sein}. Die Variablen, die zu Beginn eines Blocks deklariert werden, gehören in gewisser Weise zu diesem Block. Nachdem der Block endet, werden die Variablen verworfen. Darüber hinaus kann eine Variablendeklarion in einem Block eine Variable des ihn umschließenden Blocks {\itshape überdecken}: Das heißt, in einem Block können Variablen deklariert werden, die außerhalb des Blocks bereits existieren. Diese beiden Variablen repräsentieren in diesem Fall \emph{zwei unterschiedliche Speicherbereiche}, und innerhalb des Blocks können wir nur noch diejenige Variable verwenden, welche auch im Block deklariert wurde. Ein Beispiel:
+
+
+\begin{codes}[Beispiel für Überdeckung,label=code:ueberdeckung]
+#include <stdio.h>
+int main() {             /* Hier beginnt Block 1 */
+    int i = 4;
+    int j = 6;
+    {                      /* Hier beginnt Block 2 */
+        int i=3;
+        printf("%i\n",i);  /* Gibt 3 aus */
+        printf("%i\n",j);  /* Gibt 6 aus */
+    }                      /* Hier endet Block 2 */
+    printf("%i\n",i);      /* Gibt 4 aus */
+}                          /* Hier endet Block 1 */
+\end{codes}
+
+\subsection{If-Else-Statement}
+Einfache Rechenoperatoren erlauben uns nicht, komplexe Algorithmen zu implementieren -- es fehlt die Möglichkeit, abhängig vom  {\itshape Ergebnis} einer Operation {\itshape unterschiedlichen} Code auszuführen. Um dies zu ermöglichen, lernen wir nun das erste Programmierstatement kennen: Das If-Else-Konstrukt:
+
+\begin{alltt}
+    if ( \ph{BEDINGUNG} ) \ph{BEFEHL 1}
+    \opt{else \ph{BEFEHL 2}}
+\end{alltt}
+
+wobei die Bedingung eine beliebige Expression und die Befehle jeweils ein beliebiges Statement (meistens ein Block) sein können. Es wird der erste Befehl ausgeführt, sofern die Bedingung einen Wert ungleich $0$ hat. Ansonsten, falls durch °else° angegeben, der zweite.
+
+\subsection{Logische- und Vergleichsoperatoren}
+\label{sec:logischeundvergleichsoperatoren}
+Für die Bedingung im If-Else-Statement lernen wir noch einige weitere Operatoren kennen, die sogenannten \df{Vergleichsoperatoren}:
+
+\begin{table} [H] \centering
+\label{table:vergleichsoperatoren}
+\begin{tabular}{|l|c|} \hline 
+\bfseries{Operator} & \bfseries{Syntax} \\\hline
+Prüfen auf Gleichheit&°a == b° \\\hline
+Prüfen auf Ungleichheit&°a != b° \\\hline
+Prüfen, ob °a° echt größer als °b° ist&°a > b° \\\hline
+Prüfen, ob °a° echt kleiner als °b° ist&°a < b° \\\hline
+Prüfen, ob °a° größer oder gleich °b° ist&°a >= b° \\\hline
+Prüfen, ob °a° kleiner oder gleich °b° ist&°a <= b° \\\hline
+\end{tabular}
+\caption{Vergleichoperatoren}
+\end{table}
+
+Diese Operatoren liefern immer die Werte °1° oder °0°, abhängig vom Ergebnis des Vergleiches. Damit wird das If-Else-Statement bereits zu einem mächtigen Werkzeug. Als Beispiel ein Codesegment, dass die Signumsfunktion für einen Eingabewert °x°  implementiert:
+
+\begin{codes}[Signumsfunktion,label=code:signuminline]
+if (x < 0)      /* falls x kleiner als 0 ist: */
+  y = -1;       /* das Signum ist -1 */
+else            /* Ansonsten (falls x größergleich 0): */
+  y = (x != 0); /* falls x Null, wird y Null, sonst 1 */
+\end{codes}
+
+Um Vergleiche logisch zu verknüpfen, gibt es darüber hinaus auch noch die sogenannten \df{logischen Operatoren} (\ref{table:logischeoperatoren}). Dies sind ebenfalls binäre Operatoren (bis auf das logische Nicht), welche zwei Expressions die Werte °0° oder °1° zuweisen. 
+
+\begin{table} [H]  \centering
+\label{table:logischeoperatoren}
+\begin{tabular}{|l|c|} \hline 
+\bfseries{Operator} & \bfseries{Syntax} \\\hline
+Logisches Und & °A && B° \\\hline
+Logisches Oder & °A || B° \\\hline
+Logische Verneinung & °!A° \\\hline
+\end{tabular}
+\caption{Logische Operatoren}
+\end{table} 
+
+Die Ergebnisse der Logischen Operatoren lassen sich am einfachsten durch Wertetabellen veranschaulichen. Siehe dazu \ref{table:logischeoperatorenwerte}.
+
+\begin{table} [H]  \centering
+\label{table:logischeoperatorenwerte}
+\begin{tabular}{|r|r|c|c|c|} \hline 
+\bfseries{°A°} & \bfseries{°B°} & \bfseries{°A && B°} & \bfseries{°A || B°} & \bfseries{°!A°} \\\hline
+$0$ & $0$ & $0$ & $0$ & $1$ \\\hline
+$0$ & $\neq 0$ & $0$ & $1$ & $1$ \\\hline
+$\neq 0$ & $0$ & $0$ & $1$ & $0$ \\\hline
+$\neq 0$ & $\neq 0$ & $1$ & $1$ & $0$ \\\hline
+\end{tabular}
+\caption{Logische Operatoren}
+\end{table}
+
+Es gibt jedoch noch eine wichtige Eigenart dieser Operatoren zu erwähnen: Die logischen Operatoren werten nur so viele ihrer Argumente aus, bis das Ergebnis der Verknüpfung bereits feststeht. So würde etwa bei der Auswertung von °(1 || x--)° die Variable °x° {\itshape nicht} dekrementiert, da das Ergebnis der Operation bereits bei der Auswertung von °1° feststeht. Dies ist selbstverständlich nur von Bedeutung, sofern eine der auszuwertenden Expressions einen Nebeneffekt hat.
+
+\subsection{Der Schleifen erster Teil: while}
+Wollen wir einen bestimmten Codeblock mehrfach ausführen, so verwenden wir ein Statement, was als \df{Schleife} bezeichnet wird. Eine Schleife wiederholt die Befehle so lange, wie eine bestimmte Expression ungleich °0° ist. Die Syntax
+
+\begin{alltt}
+    while (\ph{BEDINGUNG}) \ph{BEFEHL}
+\end{alltt}
+
+weist den Computer an, zu prüfen, ob die Expression \ph{°BEDINGUNG°} ungleich °0° ist. Ist dies der Fall, so wird das Statement \ph{°BEFEHL°} ausgeführt und wir fangen wieder von vorne mit dem Prüfen der Bedingung an. Andernfalls wird die Schleife beendet. Meistens sollten die Befehle dafür sorgen, dass \ph{°BEDINGUNG°} irgendwann zu °0° auswertet, indem etwa Variablen verändert werden. Man kann jedoch ebensogut eine Endlosschleife programmieren:
+
+\begin{codes}[Endlosschleife,label=code:endlosschleife]
+while(1); /* leeres statement: tue nichts, und das für immer */
+\end{codes}
+
+Wir wollen ein Beispiel angeben, welches die Geometrische Reihe $\sum_{n=0}^\infty q^n = \frac{1}{1-q}$ ausrechnet:
+
+\begin{codes}[Geometrische Reihe,label=code:geometrischereihe]
+double q = 0.2;
+double x = 1.0, y = 0.0;  /* Hilfsvariablen */
+while (x > 1e-10) {       /* Solange x nicht zu klein ist */
+  y = y+x;                /* y speichert die Partialsummen */
+  x = x*q;                /* Berechne den nächsten Summanden */
+}
+/* Ergebnis steht jetzt in y */
+\end{codes}
+
+Dieses Beispiel zeigt anschaulich, dass Programme deutlich aufwändiger sein können, als sie müssen. Wir hätten ebenso gut °y=1./(1.-q);° schreiben können, was der Computer in einem Bruchteil der Zeit berechnen könnte. Man sollte sich immer bemühen, nicht unnötig Rechenzeit zu vergeuden. 
+ 
+Wenn man das Statement \ph{°BEFEHL°} gerne Ausführen möchte, bevor das erste Mal geprüft wird, ob \ph{°BEDINGUNG°} zu °0° auswertet, so kann man eine do-while-Schleife verwenden:
+
+\begin{alltt}
+    do \ph{BEFEHL} while(\ph{BEDINGUNG});
+\end{alltt}
+
+Man bemerke hier das zwingend erforderliche Semikolon am Ende.
+
+
+\subsection{Der Schleifen zweiter Teil: for}
+Die while-Schleife lässt sich verallgemeinern zur °for°-Schleife, dem folgenden Konstrukt:
+
+\begin{alltt}
+    for( \ph{\opt{INITIALISIERUNG}}; \ph{\opt{BEDINGUNG}}; \ph{\opt{STEP}} )
+      \ph{BEFEHL}
+\end{alltt}
+
+wobei wir dies wie folgt durch eine while-Schleife modellieren könnten, sofern die Bedingung angegeben ist:
+
+\begin{alltt}
+    \ph{INITALISIERUNG};
+    while ( \ph{BEDINGUNG} ) \{
+      \ph{BEFEHL}
+      \ph{STEP};
+    \}
+\end{alltt}
+
+Damit sind also die Initialisierung, der Step und die Bedingung jeweils eine Expression. Der Befehl ist, wie immer, ein einzelnes Statement (meistens ein Code-Block). Das Beispiel aus dem letzten Abschnitt kann man also so umschreiben:
+
+\begin{codes}[Geometrische Reihe mit einer For-Schleife,label=code:geometrischreihefor]
+double x,y,q = 0.2; 
+for (x=1.,y=0.; x>1e-10; x = x*q)
+ y = y+x;
+\end{codes}
+
+Lässt man bei der °for°-Schleife die Bedingung weg, bricht die Schleife nicht ab. Genauer: Die Schleife verhält sich so, als wäre die Bedingung die konstante Expression °1°. Step oder Initialisierung sind ebenfalls optional und können weggelassen werden -- also ist folgende Schleife eine Endlosschleife: °for(;;);°
+
+Es gibt zwei besondere Statements, welche innerhalb von Schleifen verwendet werden können:
+
+\begin{table} [H] 
+\label{table:schleifenbefehle} \centering
+\begin{tabularx}{\textwidth}{|l|X|} \hline 
+\bfseries{Statement} & \bfseries{Effekt} \\\hline
+°break;° & Schleife abbrechen bzw. zum nächsten Statement nach der Schleife springen. In einer °for°-Schleife wird der Step noch einmal ausgeführt. \\\hline
+°continue;° & Nur diesen Schleifendurchlauf abbrechen (zum Step springen). \\\hline
+\end{tabularx}
+\caption{Spezielle Schleifenbefehle}
+\end{table}
+
+Bei einer °for°-Schleife sorgt ein °continue°-Statement also dafür, dass der Step noch ausgeführt wird, bevor die Bedingung abgefragt wird und dann evtl. der nächste Schleifendurchlauf beginnt.

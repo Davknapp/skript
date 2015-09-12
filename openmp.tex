@@ -1,0 +1,70 @@
+\section{Multithreading mit OpenMP}
+In diesem Kapitel möchten wir eine Bibliothek vorstellen mit der in C sogenanntes ``Threads'' realisiert sind. Threads ermöglichen es, mehrere Dinge gleichzeitig zu berechnen. In alten Heimcomputern ist dies nicht möglich -- das höchste der Gefühle ist hier, zwei Berechnungen sehr schnell abwechselnd durchzuführen. In modernen Computern oder sogar in Computersystemen, die für paralleles Rechnen ausgelegt sind, stehen mehrere CPUs (oder CPUs mit mehreren Kernen) zur Verfügung. Alle C-Programme, die wir bisher geschrieben haben, nutzen maximal eine CPU bzw. maximal einen CPU-Kern.
+
+Die Idee beim Threading ist, neben dem Hauptprogramm (ab jetzt \emph{Masterthread} genannt) weitere Nebenprogramme zu starten (ab jetzt \emph{Workerthreads} genannt). Den Masterthread und die Workerthreads zusammen nennt man das \emph{Threadteam}.
+
+TODO: BILD
+
+Wir wollen anhand des folgenden Beispiels zeigen, wie einfach OpenMP verwendet werden kann:
+
+\begin{codes}[,label=code:openmp:bsp]
+int main() {
+    int i;
+    double a[10000];
+    for(i=0; i<10000; i++) {
+        a[i] = i*i / 2.0;
+    }
+    return 0;
+}
+\end{codes}
+
+In diesem einfachen Programm wird ein Array mit den halben Quadratzahlen gefüllt. Zu beachten ist, dass die Berechnung der nächsten Quadratzahl nicht von der vorhergehenden abhängt, also können wir durch das Hinzufügen von nur zwei Zeilen die Berechnung parallelisieren:
+
+\begin{codes}[,label=code:openmp:parallelbsp]
+#include <omp.h>
+int main() {
+    int i;
+    double a[10000];
+    #pragma omp parallel for
+    for(i=0; i<10000; i++) {
+        a[i] = i*i / 2.0;
+    }
+    return 0;
+}
+\end{codes}
+
+Verwendet man den gcc, muss beim  Kompilieren das Compiler-Flag °-fopenmp° angegeben werden. Es weißt den gcc dazu an, das ``Compiler-Plugin'' °openmp° zu verwenden. Beim Erreichen von Zeile $5$ erzeugt der Masterthread einige Workerthreads und die Berechnung in der °for°-Schleife wird auf sie aufgeteilt -- diesen Vorgang nennt man \emph{Fork}. In Zeile 8 ist die Schleife zuwende und die Workerthreads verschwinden wieder -- dies nennt man \emph{Join}.
+
+Die Anweisung °#pragma omp parallel for° ist eine Kurzschreibweise für andere Anweisungen, diese werden wir zunächst kennen lernen. Solche Anweisungen von OpenMP haben die folgende Form: 
+
+\begin{alltt}
+    #pragma opm \ph{DIRECTIVE} \opt{CLAUSES}
+\end{alltt}
+
+Das weitere Ziel ist nun, Worte zu lernen, die als \ph{DIRECTIVE} und \opt{CLAUSES} angegeben werden können:
+
+\subsection{Forking und Joining}
+Um an irgendeiner Stelle zu Forken -- also den Masterthread anzuweisen Workerthreads zu erzeugen -- verwendet man die Direktive °parallel°. Danach kann ein C-Block angegeben werden, der dan von allen Threads gleichermaßen ausgeführt wird: 
+
+\begin{codes}[,label=code:openmp:parallel]
+#pragma omp parallel
+{
+    do_work();
+}
+\end{codes}
+
+In diesem Beispiel wird die Funktion °do_work° von allen Threads aufgerufen. Die Anzahl der Threads kann über die Umgebungsvariable °OMP_NUM_THREADS° oder über die Klausel °thread_num(°\ph{ANZAHL}°)° gesteuert werden:
+
+\begin{codes}[,label=code:openmp:parallel]
+#pragma omp parallel thread_num(2)
+{
+    if (omp_get_thread_num() == 0) do_work();
+    else do_other_work();
+}
+\end{codes}
+
+GOON
+
+\subsection{Schleifen}
+
+\subsection{Sektionen}

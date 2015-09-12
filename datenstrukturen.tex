@@ -1,0 +1,356 @@
+\section{Datenstrukturen}
+\subsection{Strukturdefinitionen}
+Strukturen werden verwendet, um mehrere, im Speicher hintereinander angeordnete Variablen zusammenzufassen. Mit folgender Syntax definiert man eine Strukturtyp und damit einen ganz \emph{neuen Datentyp}:
+
+\begin{alltt}
+    struct \ph{STRUKTURNAME} \{
+      \ph{DATENTYP 1} \ph{FELDNAME 1};
+      \ph{DATENTYP 2} \ph{FELDNAME 2};
+        \ldots
+      \ph{DATENTYP n} \ph{FELDNAME n};
+    \};
+\end{alltt}
+
+Eine solche Strukturdefinition steht außerhalb von Funktionscode meist am Anfang des Quellcodes (bzw. in der Headerdatei eines Moduls). Man kann im folgenden Code nun °struct °\ph{°STRUKTURNAME°} als Datentyp verwenden -- Variablen dieses Typs heißen \df{Strukturen} und enthalten mehrere ``Untervariablen'', welche auch als \df{Felder} bezeichnet werden. Um auf die Felder einer Struktur zuzugreifen, verwendet man den \df{Punktoperator} \label{Op:FeldZugriff}:
+\begin{alltt}
+    \ph{STRUKTURNAME}.\ph{FELDNAME}
+\end{alltt}
+
+Enthält eine Struktur °X° ein Feld von Typ °T° mit Namen °y°, so ist °X.y° die in °X° enthaltene Variable vom Typ °T°. Ein Beispiel:
+
+\begin{codes}
+#include <stdio.h>
+
+/* Wir definieren eine Struktur: */
+struct DRESULT {
+  unsigned Q;
+  unsigned R; 
+};
+
+/* Nun ist struct DRESULT ein neuer Datentyp und als
+   Rückgabewert der folgenden Funktion zulässig: */
+struct DRESULT divmod( unsigned a, unsigned b ) {
+  struct DRESULT division;
+  division.Q = a / b;
+  division.R = a % b;
+  return division;
+}
+
+sint main() {
+  struct DRESULT D = divmod(53,11);
+  printf("53 / 11 = %u Rest %u\n", D.Q, D.R );
+  return 0;
+}
+\end{codes}
+
+Wir geben noch ein weiteres Beispiel:
+
+\begin{codes}
+#include <math.h>
+#include <stdio.h>
+
+struct PUNKT {
+  double x;
+  double y; 	
+};
+
+double length(struct PUNKT p) {
+  return sqrt( p.x*p.x + p.y*p.y ); 
+}
+
+int main() {
+  struct PUNKT p;
+  p.x = 6;
+  p.y = 7;
+  printf("Abstand des Punktes zu 0: %.5f", length(p));
+  return 0;
+}
+\end{codes}
+
+Es sei noch einmal darauf hingewiesen, dass durch die Strukturdefinition ein neuer Datentyp ensteht. Wir könnten in unserem Beispiel ebenso gut ein statisches Array mit Einträgen vom Typ °struct PUNKT° erstellen, oder Funktionen mit Rückgabewert °struct PUNKT° definieren. Strukturvariablen lassen sich auch initialisieren. Die komplette Syntax einer Strukturvariablen-Deklaration hat die Form
+
+\begin{alltt}
+    struct \ph{STRUKTURNAME} \ph{VARIABLENNAME}\opt{ = \{ \ph{INITIALISIERUNG} \}};
+\end{alltt}
+
+hierbei ist die Initialisierung eine Expressionliste, welche höchstens so viele Einträge haben darf, wie die Struktur Felder aufweist. In der Reihenfolge, in der die Felder in der Strukturdefinition auftreten, werden sie dann durch die Einträge der Expressionliste initialisiert. Der Rest wird, wie bei Arrays, zu $0$ initialisiert. In unserem Beispiel könnten wir also ebenso gut einfach schreiben:
+
+\begin{codes}
+struct PUNKT p = { 6, 7 };
+\end{codes}
+
+\emph{Anmerkung:} Namen für Strukturen können nach den gleichen Regeln gewählt werden wie alle anderen Namen in C. Wir schreiben Strukturnamen konventionsmäßig in Großbuchstaben, um sie noch deutlicher von den primitiven Datentypen (°int°, °double°, °char°, \ldots) abzugrenzen.
+
+\newpage
+
+\subsection{Datenstrukturen}
+
+Der Begriff ``Datenstruktur'' bezieht sich nicht allein auf die Definition einer  Struktur im obigen Sinne. Um neue Datentypen zu erstellen, braucht man auch Operatoren, um auf diesen Datentypen zu arbeiten. Ein Beispiel hier:
+
+\begin{codes}[Die komplexen Zahlen mit Rechengesetzen (complex.h),label=code:komplexezahlenheader]
+#ifndef _COMPLEX_H
+#define _COMPLEX_H
+
+/* Der neue Datentyp struct COMPLEX repräsentiert eine komplexe  Zahl, indem wir Real- und Imaginärteil separat abspeichern. */
+struct COMPLEX {
+  double real; 
+  double imag;
+};
+
+/* multipliziere zwei komplexe Zahlen: */
+struct COMPLEX mul( struct COMPLEX alpha, struct COMPLEX beta );
+
+/* addiere zwei komplexe Zahlen: */
+struct COMPLEX add( struct COMPLEX alpha, struct COMPLEX beta );
+
+/* dividiere zwei komplexe Zahlen durcheinander: */
+struct COMPLEX div( struct COMPLEX alpha, struct COMPLEX beta );
+
+/* bilde das negative einer komplexen Zahl: */
+struct COMPLEX neg( struct COMPLEX alpha );
+
+/* potenziere eine komplexe Zahl mit einer ganzen Zahl: */
+struct COMPLEX pot( struct COMPLEX alpha, int n );
+
+#endif
+\end{codes}
+\begin{codes}[Die komplexen Zahlen mit Rechengesetzen (complex.c)]
+#include "complex.h"
+
+/* wir benötigen die Strukturdefinition von struct COMPLEX. Dies ist ein weiterer Grund, warum die Quellcodedatei ihre zugehörige Headerdatei für gewöhnlich einbindet. */
+
+struct COMPLEX mul ( struct COMPLEX alpha, struct COMPLEX beta ) {
+  struct COMPLEX gamma;
+  gamma.real = alpha.real * beta.real - alpha.imag * beta.imag;
+  gamma.imag = alpha.real * beta.imag + alpha.imag * beta.real;
+  return gamma;
+}
+
+/* ... weitere Definitionen */
+\end{codes}
+
+Man implementiert solche Datenstrukturen mit ihren Operatoren nun zusammen in ein Modul, damit die Verwendung des neuen Datentyps in vielen verschiedenen Programmen möglich wird. Ein Programm könnte das Modul nun in etwa so verwenden:
+
+\begin{codes}[Anwendung komplexer Zahlen]
+#include <stdio.h>
+#include "complex.h"
+
+int main() {
+  struct COMPLEX c = {0.6,-0.8}, d = c;
+    /* Berechne das Quadrat des Betrags von c: */
+  d.imag = -d.imag;
+  d = multiply(d,c);
+  printf("%5.3lf%+5.3lfi\n",d.real, d.imag);
+  return 0;
+}
+\end{codes}
+
+Man sollte sich zum Zeitpunkt der Programmierung einer Datenstruktur vollkommen klar darüber sein, wie ein Programm später mit dieser Datenstruktur arbeiten soll. Manchmal ist es sogar am günstigste zuerst ein kleines Programm zu schreiben, dass die Datenstruktur verwendet (welches man ohnehin braucht, um sie zu testen) und dann erst mit Programmierung der Datenstruktur selbst zu beginnen.
+
+\subsection{Pointer auf Strukturen}
+Genau wie Arrays können Strukturen unter Umständen sehr viel Speicherplatz beanspruchen. Häufig kann man sich dann darauf beschränken, nur einen Pointer zu übergeben. Möchte man nun auf ein Feld °y° einer Struktur zugreifen, die durch einen Pointer °p° gegeben ist, so muss man einfach den Pointer dereferenzieren und auf die dadurch zurückgewonnene Strukturvariable durch den Punktoperator zugreifen:
+
+\begin{alltt}
+    (*p).y
+\end{alltt}
+
+Der Punktoperator bindet allerdings stärker als der Dereferenzierungsoperator (man sagt auch, der Punktoperator hat eine höhere \df{Operatorpräzedenz}, genau wie man auch sagt ``Punkt- vor Strichrechnung''). Das bedeutet, dass die gerade  gesetzten Klammern notwendig sind. Die Schreibweise °*p.y° entspräche °*(p.y)°, was, da der Punktoperator nicht auf Pointer definiert ist, syntaktisch falsch wäre. Da dies etwas umständlich ist, wurde in C dafür die abkürzende Schreibweise \label{Op:Pfeil} °p->y° eingeführt. Um unser Beispiel zu erweitern:
+
+\begin{codes}[Real- bzw. Imanginärteil einer komplexen Zahl zurück zu geben]
+double Im(struct COMPLEX *c) { return c->imag; }
+double Re(struct COMPLEX *c) { return c->real; }
+\end{codes}
+
+Man bezeichnet diesen Operator auch als den \df{Pfeiloperator}.
+
+\subsection{Intermezzo: Typdefinitionen} \label{typdefinitionen}
+In C ist es nicht nur möglich, sich neue Datentypen auf die oben genannte Weise zu definieren, man kann auch jedem bestehenden Datentyp einen weiteren Namen zuweisen. Dies ist möglich durch die Verwendung von °typedef°:
+
+\begin{alltt}
+    typedef \ph{SCHABLONE};
+\end{alltt}
+
+Die °SCHABLONE° hat die Syntax einer Variablendeklaration (ohne Initialisierung). Der Name der Variablen, den wir bei dieser ``Deklaration'' angeben ist der so entstandene Datentyp. Wird er vom Compiler in einer Variablendeklaration gefunden  so wird er in der °SCHABLONE° durch den deklarierten Variablennamen ersetzt und an dieser Stelle eingefügt. Hier ein Beispiel:
+
+\begin{codes}
+typedef double POINT[2];
+POINT p = { 2, 4 };
+\end{codes}
+
+Der definierte Datentyp heißt °POINT°. Bei der Variablendeklaration wird der Name des Typs in der Schablone durch den Namen der deklarierten Variable (hier °p°) ersetzt. Damit ist obiger Code äquivalent zu 
+
+\begin{codes}
+double p[2] = { 2, 4 };
+\end{codes}
+
+Es ist gegebenenfalls wichtig, sich klarzumachen, dass °typedef° sich bei Deklaration mehrerer Variablen in einem Statement freundlich verhält:
+
+\begin{codes}
+POINT p = { 2, 4 }, q = { 1, 7 };
+\end{codes}
+
+wird zu 
+
+\begin{codes}
+double q[2] = { 1, 7 };
+double p[2] = { 2, 4 };
+\end{codes}
+
+Zunächst werden also alle Kommata expandiert und einzelne Variablendeklarationen aus dem Statement gemacht und \emph{danach} die Schablone angewandt. Beachte:
+
+ \begin{table}[H] \centering
+ \begin{tabular}{lcl}
+°typedef char *STRING;° & $\quad\xrightarrow{\textnormal{wird zu}}\quad$ & °char *s1;° \\
+°STRING s1, s2;° &  &
+°char *s2;°
+\end{tabular}
+\end{table}
+
+Während andererseits:
+
+ \begin{table}[H] \centering
+ \begin{tabular}{lcl}
+°char *s1,s2;° & $\quad\xrightarrow{\textnormal{wird zu}}\quad$ & °char *s1;° \\
+& & °char  s2;°
+\end{tabular}
+\end{table}
+
+Besonders im Zusammenhang mit Strukturdefinitionen stellen Typdefinitionen eine ernsthafte Erleichterung dar. Man betrachte etwa das wie folgt modifizierte Beispiel \ref{code:komplexezahlenheader}:
+
+\begin{codes}
+#ifndef _COMPLEX_H
+#define _COMPLEX_H
+
+struct COMPLEX {
+  double real;
+  double imag;
+};
+
+typedef struct COMPLEX COMPLEX;
+
+COMPLEX mul(COMPLEX alpha, COMPLEX beta);
+COMPLEX add(COMPLEX alpha, COMPLEX beta);
+COMPLEX div(COMPLEX alpha, COMPLEX beta);
+COMPLEX neg(COMPLEX alpha );
+COMPLEX pot(COMPLEX alpha, int n );
+
+#endif
+\end{codes}
+
+Man kann Typdefinitionen mit Strukturdefinitionen direkt verbinden, indem man schreibt 
+
+\begin{alltt} 
+typedef struct \{
+  \ph{DATENTYP 1} \ph{FELDNAME 1}
+  \ph{DATENTYP 2} \ph{FELDNAME 2}
+  \ldots
+  \ph{DATENTYP n} \ph{FELDNAME n}
+\} \ph{NAME};
+\end{alltt}
+
+Danach kann man dann neue Variablen vom Typ \ph{°NAME°} deklarieren, welche der Struktur entsprechen. Beispiel:
+\begin{codes}
+typedef struct {
+  double real;
+  double imag;
+} COMPLEX;
+\end{codes}
+
+\subsection{Anwendung: Verkettete Listen}
+Wir wollen nun das Erlernte verwenden, um eine bekannte und wichtige Datenstruktur in C zu implementieren. Als Datenstruktur bezeichnen wir ein Schema, nach dem Daten einer gewissen Form im Computer gespeichert werden. Dazu gehören auch eine Reihe von Operationen auf der Datenstruktur, um diese zu modifizieren. Ein nahe liegendes Schema, um Daten im Computer zu Speichern, ist uns bereits bekannt: Arrays. Auch werden alle notwendigen Operationen auf Arrays von der Sprache C bereits in Form von elementarer Pointerarithmetik zur Verfügung gestellt.
+
+Es gibt jedoch eine weiteres Schema, um einen sortierten Satz von mehreren Variablen zu speichern. Dieses Schema wird als (doppelt) verkettete Liste bezeichnet. In einer verketteten Liste wird jede Variable $x_i$ in einen sogenannten Knote (engl. ``node'') eingebettet, der neben $x_i$ auch einen Rückwärtspointer $p_i$ (previous) auf $x_{i-1}$ und einen Nachfolgerpointer $\texttt{next}_i$ (next) auf $x_{i+1}$ enthält. Der erste Rückwärtspointer und der letzte Nachfolgerpointer sollen der Nullpointer sein. Diese Knoten modellieren wir als Strukturen:
+
+\begin{codes}
+typedef struct NODE {
+  struct NODE  *next;
+  struct NODE  *prev;
+  double        data;
+} NODE;
+\end{codes}
+
+Wir können also in der Definition der Struktur bereits Pointer auf die Struktur verwenden, die gerade im Begriff ist, definiert zu werden\footnote{Dies liegt daran, dass Pointer ohnehin immer die gleiche Größe haben und lediglich Adressen speichern.}. Jeder Knoten ist nun eine Struktur, die einen Pointer auf den nächsten Knoten und die gespeicherte Variable enthält. Die Liste selbst repräsentieren wir auch durch eine Struktur, welche Pointer auf das erste und letzte Element speichert:
+
+\begin{codes}
+typedef struct {
+  NODE *first;
+  NODE *last;
+} LIST;
+\end{codes}
+
+Eine Liste soll (graphisch dargestellt) immer folgenden Aufbau haben:
+
+\begin{figure}[H]
+\[ 
+\SelectTips{cm}{}
+\xymatrix@C=4em{
+ && *++[F-,]{\texttt{LIST}} 
+\ar`l[lld]_-{\texttt{first}}[lld]
+\ar`r[rrd]^-{\texttt{last}}[rrd]
+&& \\
+  *++[F-,]{\texttt{NODE}_0} \ar@<+.7ex>[r]^-{\texttt{next}_0} \ar`d[dr][drr]^-{\texttt{prev}_0}
+ & *++[F-,]{\texttt{NODE}_1} \ar@<+.7ex>[r]^-{\texttt{next}_1} \ar@<+.7ex>[l]^-{\texttt{prev}_1}
+ & *++[F-,]{\texttt{NODE}_2} \ar@<+.7ex>[r]^-{\texttt{next}_2} \ar@<+.7ex>[l]^-{\texttt{prev}_2}
+ & *++[F-,]{\cdots} \ar@<+.7ex>[r]^-{\texttt{next}_l} \ar@<+.7ex>[l]^-{\texttt{prev}_3}
+ & *++[F-,]{\texttt{NODE}_l} \ar@<+.7ex>[l]^-{\texttt{prev}_l} \ar`d[dl][dll]_-{\texttt{next}_l} \\
+ && *++{\texttt{NULL}}  &&
+}\]
+\caption{Darstellung einer doppelt verketteten Liste}
+\end{figure}
+
+Wir erlauben weiterhin, dass sowohl °first° als auch °last° der Nullpointer sind und wollen in diesem Falle sagen, die Liste sei leer: 
+
+\[ 
+\SelectTips{cm}{}
+\xymatrix@C=4em{
+ *++[F-,]{\texttt{LIST}}
+ \ar@<-.7ex>[r]_-{\texttt{first}}
+ \ar@<+.7ex>[r]^-{\texttt{last}} &
+ *++{\texttt{NULL}}
+}\]
+
+Nun haben wir die Datentypen definiert, doch wir benötigen noch Funktionen, um mit ihnen sinnvoll arbeiten zu können. Die gesamte Headerdatei für das Modul, dass eine Listenstruktur bereitstellt, könnte etwa wie folgt aussehen:
+
+\begin{codes}
+#ifndef LIST_H
+#define LIST_H
+
+typedef struct NODE {
+  struct NODE  *next;
+  struct NODE  *prev;
+  double        data;
+} NODE;
+
+typedef struct {
+  NODE *first;
+  NODE *last;
+} LIST;
+
+LIST *list_create();       /* Liste erstellen */
+void  list_free(LIST *L);  /* Speicher freigeben */
+
+/* Füge hinter cursor einen neuen Knoten in die Liste ein. Falls
+   cursor gleich NULL ist, füge am Anfang der Liste ein. Gibt 
+   einen Pointer auf  das neu eingefügte Element zurück, oder NULL
+   im Fehlerfall. */
+NODE *list_insert(LIST *L, NODE *cursor, double data);
+
+/* Lösche einen Knoten aus der Liste. */
+void list_delete(LIST *L, NODE *del);
+
+#endif
+\end{codes}
+
+Es ist eine hilfreiche Übung, dieses Modul selbst zu implementieren. Wir wollen zum Schluss noch zeigen, wie man alle Elemente einer Liste fachgerecht mit einer Schleife durchläuft:
+
+\begin{codes}
+LIST *L;
+NODE *p;
+/* Liste initialisieren, Einträge erzeugen, etc. */
+
+for (p=L->first; p; p = p->next) {
+  /* arbeite mit Knoten p */
+}
+\end{codes}
+
+Der Pointer °p° zeigt zu Beginn der °for°--Schleife auf das erste Element der Liste und springt in jedem Schritt zum nächsten. Sobald man am Ende angekommen ist, wird °p° der Wert °NULL° zugewiesen, da der °next°--Pointer des letzten Elements dorthin verweist: Die Schleife bricht ab.

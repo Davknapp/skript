@@ -1,0 +1,15 @@
+*.tox
+*.aux
+*.bbl
+*.blg
+*.log
+*.toc
+*.undo
+ProgKursSkript.lpr
+main.pdf
+main.dvi
+*.ps
+*.out
+*.synctex.gz
+*.fdb_latexmk
+*.fls
