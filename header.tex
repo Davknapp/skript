@@ -1,0 +1,81 @@
+\documentclass[12pt,ngerman]{article}
+\usepackage[T1]{fontenc}
+\usepackage[latin1]{inputenc}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage[all]{xy}
+\usepackage{a4}
+\usepackage{alltt}
+\usepackage[ngerman]{babel}
+\usepackage{graphicx}
+\usepackage{wrapfig}
+\usepackage{enumitem}
+\usepackage{lmodern}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{tabularx}
+\usepackage{mathrsfs}
+\usepackage{multirow}
+\usepackage{listings}
+\usepackage{color}
+\usepackage{calc}
+\usepackage{shortvrb}
+\usepackage{alltt}
+\usepackage[export]{adjustbox}
+
+\usepackage{graphicx}
+\usepackage{epstopdf}
+
+\usepackage{ifpdf}
+\ifpdf
+\usepackage[pdftex]{hyperref}
+\else
+\usepackage[dvips,dviwindo,hypertex]{hyperref}
+\fi
+
+\definecolor{linkcolor}{rgb}{0.5,0.08,0.08}
+\hypersetup{pdftex=true,colorlinks=true,breaklinks=true,linkcolor=linkcolor,menucolor=linkcolor,citecolor=linkcolor,filecolor=linkcolor,urlcolor=linkcolor,frenchlinks=false}
+
+\MakeShortVerb{\°}
+%\DeleteShortVerb{\°}
+
+\definecolor{gray}{gray}{0.5}
+\newcommand{\opt}[1]{\textcolor{gray}{#1}}
+\newcommand{\ph}[1]{\underline{#1}}
+\newcommand{\df}[1]{\emph{#1}}
+\newcommand{\headerfile}[1]{<°#1°>}
+\newcommand{\filename}[1]{°#1°}
+
+\lstnewenvironment{codes}[1][]{  
+	\vspace{.4em}
+	\lstset{caption=#1}
+	\fontfamily{pcr}\selectfont
+}{
+	\fontfamily{ptm}\selectfont 
+	\vspace{.4em}
+}
+
+
+%\newcommand{\ic}[1]{\tt\lstinline!#1!}
+ \newcommand{\ic}[1]{°#1°}
+
+\newcommand{\pic}[3]{
+	\begin{wrapfigure}{r}{#1} \centering
+		\includegraphics[width=#1]{#2}
+		\caption{#3}
+	\end{wrapfigure}
+}
+
+\newcommand{\todo}[1]{\marginpar{\raggedright {\bf TODO: }#1}}
+
+\newcommand{\cpic}[2]{\begin{figure}[H]
+	\centering
+	\includegraphics[width=\textwidth]{#1}
+	\caption{#2}
+	\end{figure}
+}
+
+\setlength{\parindent}{0pt}
+
+\newcommand{\theauthor}{Jesko Hüttenhain\\rattle@uni-bonn.de \and Lars A. Wallenborn\\lars@wallenborn.net}
