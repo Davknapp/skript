@@ -89,7 +89,7 @@ Darüber hinaus ist jedes Programm, dass auf dem Computer (bzw. in Cygwin) instal
 Durch °notepad helloworld.c° erstellen wir die Textdatei °helloworld.c°. Es ist Konvention, dass Dateien, welche C-Quellcode enthalten, die Dateiendung °.c° erhalten. Wir bitten freundlich um Einhaltung dieser Konvention unter Androhung ritueller Enthauptung. Nach Tippen des oben angegebenen Quellcodes speichern wir die Datei und kehren zur Kommandozeile zurück. Der Befehl °gcc° hat folgendes Format:
 
 \begin{alltt}
-    gcc \opt{-Wall -pedantic} -o \ph{EXECUTABLE} \ph{QUELLDATEI}
+    gcc \opt{-Wall -Wpedantic} -o \ph{EXECUTABLE} \ph{QUELLDATEI}
 \end{alltt}
 
 wobei in diesem Fall unsere Quelldatei den Namen °helloworld.c° trägt. Als Name für die Executable bietet sich der Name °helloworld.exe° an, doch natürlich steht einem die Entscheidung hier frei. Die Option °-Wall° ist eine Abkürzung für "`Warning: All"' und bedeutet, dass der Compiler alle Warnungen ausgibt. Warnungen sind unser wichtigstes Hilfsmittel, um später Fehler in Programmen zu finden und zu beheben.
