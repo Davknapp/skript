@@ -1,0 +1,15 @@
+before_install:
+- "sudo apt-get update && sudo apt-get install --no-install-recommends texlive-fonts-recommended texlive-latex-extra texlive-fonts-extra texlive-latex-recommended texlive-generic-recommended dvipng lmodern latexmk"
+script:
+- mkdir _build
+- latexmk -pdf -jobname=_build/ProgKursSkript main.tex
+deploy:
+  provider: releases
+  api_key:
+    secure: Ho9WsvUUWQ4yS7YkDtDDEUmgydgo8AoAk7dkNHZPnIRsTFqrv2ybearL3Js8sFFm0HHdm/cDbAP0bduvFijQKeZi5LkwlOR4fD+cMvZoOc5DHnLpluMnuW0k3VFOioHyXuQFr6GRpuFn45pL7mr8SKRFf1IvRnxaMlsbviKi52A6xfJAus6yJL4k4iKC1cjK+/19vOHu4v/EPA3tunyBRfbEVB2M/VGAAvzyl5vYzHeslMq9rZ9v+XfsenmvnV9Qi3Wmqu7haNPGSE/6QVhtaraFH7o7aGHTdM7UBUNW4rO//4lkr/XYl0AeZASBg6dsOXuxq1iuh60UymfjZCbylPL/e4swJ8pinN3N70Nw3sn2ZtConIO+cPjnj+68U4Y6/x6aPRWDPRz2gjgjlezTjeRmqC/KLlxHKBeMEE9/QAMOzbMM8OA6peLZzVkSAvVs8hl6pS21zcrLwBvzhudRAShpI3G3xwogJKquFHa3QrEyysGRYNDV9Cym5EquWpcpY9bc9QH0xmLi/BPeDnqopom5TQV7yHPFPDomvSgDQle47+hnIn6KcND/l4YVfxjN3R5e+vSr56tGsxbm4+rA4NU0ogo93dbIyJSuzrcwYyRtg5u5M2bBhbO6PUl1oqMxJGwg2wGjnu7YVyHSMYsFwIz17dcc63REq3k9blVxM6s=
+  file:
+  - _build/ProgKursSkript.pdf
+  skip_cleanup: true
+  on:
+    tags: true
+    repo: ThorProgKurs/skript
