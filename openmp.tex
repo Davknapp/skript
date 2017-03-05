@@ -1,11 +1,11 @@
 \section{Multithreading mit OpenMP}
-In diesem Kapitel möchten wir eine Bibliothek vorstellen mit der in C sogenanntes ``Threads'' realisiert sind. Threads ermöglichen es, mehrere Dinge gleichzeitig zu berechnen. In alten Heimcomputern ist dies nicht möglich -- das höchste der Gefühle ist hier, zwei Berechnungen sehr schnell abwechselnd durchzuführen. In modernen Computern oder sogar in Computersystemen, die für paralleles Rechnen ausgelegt sind, stehen mehrere CPUs (oder CPUs mit mehreren Kernen) zur Verfügung. Alle C-Programme, die wir bisher geschrieben haben, nutzen maximal eine CPU bzw. maximal einen CPU-Kern.
+Diese Kapitel soll den Einstieg in Thread-Programmierung erleichtern, kann dabei natürlich weder die Vollständigkeit einer Dokumentation bieten noch die Erfahrung ersetzen, die man für Thread-Programmierung benötigt. 
 
-Die Idee beim Threading ist, neben dem Hauptprogramm (ab jetzt \emph{Masterthread} genannt) weitere Nebenprogramme zu starten (ab jetzt \emph{Workerthreads} genannt). Den Masterthread und die Workerthreads zusammen nennt man das \emph{Threadteam}.
+In diesem Kapitel möchten wir eine Bibliothek vorstellen mit der in C sogenanntes ``Threads'' realisiert sind. Threads ermöglichen es, mehrere Dinge gleichzeitig zu berechnen. In alten Heimcomputern ist dies nicht möglich -- das höchste der Gefühle ist hier, zwei Berechnungen sehr schnell abwechselnd durchzuführen. In modernen Computern oder sogar in Computersystemen, die für paralleles Rechnen ausgelegt sind, stehen mehrere CPUs (oder CPUs mit mehreren Kernen) zur Verfügung. Alle C-Programme, die wir bisher geschrieben haben, nutzen maximal eine CPU bzw. maximal einen CPU-Kern. Die Idee beim Threading ist, neben dem Hauptprogramm (ab jetzt \emph{Masterthread} genannt) weitere Nebenprogramme zu starten (ab jetzt \emph{Workerthreads} genannt). Den Masterthread und die Workerthreads zusammen nennt man das \emph{Threadteam}. 
 
-TODO: BILD
+% TODO: BILD
 
-Wir wollen anhand des folgenden Beispiels zeigen, wie einfach OpenMP verwendet werden kann:
+Um die technische Realisierung wird sich die Bibliothek ``OpenMP'' kümmern, wir wollen anhand des folgenden Beispiels zeigen, wie sie verwendet werden kann:
 
 \begin{codes}[,label=code:openmp:bsp]
 int main() {
@@ -33,18 +33,18 @@ int main() {
 }
 \end{codes}
 
-Verwendet man den gcc, muss beim  Kompilieren das Compiler-Flag °-fopenmp° angegeben werden. Es weißt den gcc dazu an, das ``Compiler-Plugin'' °openmp° zu verwenden. Beim Erreichen von Zeile $5$ erzeugt der Masterthread einige Workerthreads und die Berechnung in der °for°-Schleife wird auf sie aufgeteilt -- diesen Vorgang nennt man \emph{Fork}. In Zeile 8 ist die Schleife zuwende und die Workerthreads verschwinden wieder -- dies nennt man \emph{Join}.
+Verwendet man gcc, muss beim  Kompilieren das Compiler-Flag \texttt{-fopenmp} angegeben werden. Es weißt den gcc dazu an, das ``Compiler-Plugin'' \texttt{openmp} zu verwenden. Führt man das Programm danach aus, erzeugt der Masterthread in Zeile $5$ einige Workerthreads und die Berechnung in der \texttt{for}-Schleife wird auf sie aufgeteilt -- diesen Vorgang nennt man \emph{Fork}. In Zeile 8 ist die Schleife zuwende und die Workerthreads verschwinden wieder -- dies nennt man \emph{Join}.
 
-Die Anweisung °#pragma omp parallel for° ist eine Kurzschreibweise für andere Anweisungen, diese werden wir zunächst kennen lernen. Solche Anweisungen von OpenMP haben die folgende Form: 
+Die Anweisung \texttt{\#pragma omp parallel for} ist eine Kurzschreibweise für eine andere Anweisung, diese werden wir zunächst kennen lernen. Solche Anweisungen von OpenMP haben die folgende Form: 
 
 \begin{alltt}
     #pragma opm \ph{DIRECTIVE} \opt{CLAUSES}
 \end{alltt}
 
-Das weitere Ziel ist nun, Worte zu lernen, die als \ph{DIRECTIVE} und \opt{CLAUSES} angegeben werden können:
+Das weitere Ziel ist nun, Worte zu lernen, die als \ph{DIRECTIVE} und \opt{CLAUSES} angegeben werden können (mehrer Klauseln werden durch Leerzeichen oder Kommata getrennt).
 
 \subsection{Forking und Joining}
-Um an irgendeiner Stelle zu Forken -- also den Masterthread anzuweisen Workerthreads zu erzeugen -- verwendet man die Direktive °parallel°. Danach kann ein C-Block angegeben werden, der dan von allen Threads gleichermaßen ausgeführt wird: 
+Um an irgendeiner Stelle zu Forken -- also den Masterthread anzuweisen Workerthreads zu erzeugen -- verwendet man die Direktive \texttt{parallel}. Danach kann ein C-Block angegeben werden, der dann von allen Threads gleichermaßen ausgeführt wird: 
 
 \begin{codes}[,label=code:openmp:parallel]
 #pragma omp parallel
@@ -53,9 +53,9 @@ Um an irgendeiner Stelle zu Forken -- also den Masterthread anzuweisen Workerthr
 }
 \end{codes}
 
-In diesem Beispiel wird die Funktion °do_work° von allen Threads aufgerufen. Die Anzahl der Threads kann über die Umgebungsvariable °OMP_NUM_THREADS° oder über die Klausel °thread_num(°\ph{ANZAHL}°)° gesteuert werden:
+In diesem Beispiel wird die Funktion \texttt{do\_work} von allen Threads gleichermaßen aufgerufen. Innerhalb des \texttt{parallel}-Block können nun verschiedene weitere Direktiven angegeben werden um dafür zu sorgen, dass nicht alle Threads exakt das gleiche. Ein naiver Ansatz wäre etwa die Verwendung der \emph{Laufzeitfunktion} \texttt{omp\_get\_thread\_num}, die in \texttt{<omp.h>} deklariert ist und die eindeutige Nummer des gerade aktiven Threads zurück gibt.
 
-\begin{codes}[,label=code:openmp:parallel]
+\begin{codes}[Verwendung der Parallel-Direktive,label=code:openmp:parallelthreadnum]
 #pragma omp parallel thread_num(2)
 {
     if (omp_get_thread_num() == 0) do_work();
@@ -63,8 +63,222 @@ In diesem Beispiel wird die Funktion °do_work° von allen Threads aufgerufen. Die
 }
 \end{codes}
 
-GOON
+In diesem Beispiel wurde ausserdem die Klausel \texttt{thread\_num(}\ph{ANZAHL}\texttt{)} verwendet mit der man die Anzahl der Threads steuern kann. Alternativ kann man auch die Umgebungsvariable  \texttt{OMP\_NUM\_THREADS} setzen um die Anzahl der Threads fest zu legen. Wird beides nicht gemacht, entscheided OpenMP über die beste Anzahl von Threads (liegt nur eine CPU mit nur einem Kern vor, beträgt diese wahrscheinlich $1$). 
+
+Eine weitere Klausel ist \texttt{if}, sie nimmt eine Expression als Argument entgegen. Wenn die Expression zu wahr auswertet, wird der Fork tatsächlich ausgeführt, sonst wird einfach mit einem einzigen Thread, dem Masterthread fortgefahren. Dies ist z.B. dann nützlich, wenn sich herausgestellt hat, dass sich Parallelisierung erst ab einer bestimmten Datengröße lohnt und das Programm vorher, wegen des Verwaltungsaufwand, der durch Threads versacht wird, sogar langsamer wird.
+
+\subsection{Sektionen} \label{sec:openmp:sektionen}
+Möchte man, wie im Listing \ref{code:openmp:parallelthreadnum} aus dem letzten Kapitel, zwei Aufgaben an zwei Threads verteilen, kann die Direktive \texttt{sections} verwendet werden. Im darauffolgenden Block, kann mehrmals die Direktive \texttt{section} angegeben werden. Erreicht das Programm den \texttt{sections} Block, werden die eingeschlossenen \texttt{section}s unter den bestehenden Threads aufgeteilt. Gibt es mehr \texttt{section}s als Threads, wird ein Thread mehrere \texttt{section}s nacheinander ausführen, gibt es mehr Threads als \texttt{section}s, haben einige Threads nichts zu tun.
+\begin{codes}[,label=code:openmp:sections]
+#pragma omp sections
+{
+#pragma omp section
+    {
+        do_work();
+    }
+#pragma omp section
+    {
+        do_other_work();
+    }
+}
+\end{codes}
+
+Die Direktive \texttt{sections} sollte natürlich nur innerhalb eines \texttt{parallel}-Blocks angegeben werden, sonst werden die \texttt{section}s nur unter dem Masterthread ``aufgeteilt'', der dann einfach die gesamte Arbeit macht.
 
 \subsection{Schleifen}
+Zum paralellisieren einer For-Schleife, verwendet man die Direktive \texttt{for}
 
-\subsection{Sektionen}
+\begin{codes}[,label=code:openmp:for]
+#pragma omp for
+for(i=0; i<10000; i++) {
+    a[i] = i*i / 2.0;
+}
+\end{codes}
+
+Wir möchten an dieser Stell erneut darauf hinweisen, dass eine wichtige Eigenschaft des Codes innerhalb der For-Schleife darin besteht, dass kein Durchlauf von einem vorhergehenden abhängt: Erreicht das Threadteam nämlich die \texttt{for}-Direktive, steht nicht fest, mit welchem Schleifendurchlauf begonnen wird. Es könnte sehr gut sein, dass der Durchlauf für \texttt{i=1} \emph{vor} dem Durchlauf von \texttt{i=0} ausgeführt wird. Folgender Code würde ohne Paralellisierung korrekt funktionieren, \emph{mit} aber nicht:
+
+\begin{codes}[,label=code:openmp:wrongfor]
+a[0]=1
+#pragma omp for
+for(i=1; i<n; i++) {
+    a[i] = a[i-1] * 2.0; /* DO NOT TRY THIS AT HOME */
+}
+\end{codes}
+
+Ein großes Problem an solchem Code ist ausserdem, dass er sehr wohl wie erwartet funktionieren \emph{kann} (z.B. wenn man ihn Zuhause testet, nur eine CPU mit nur einem Kern hat und die Sterne richtig stehen). Es kann aber ganz plötzlich dazu kommen, dass er unerwartete Resultate liefert, weil beispielsweise der Durchlauf von \texttt{i=2} vor dem Durchlauf von \texttt{i=1} ausgeführt wird und \texttt{a[1]} darum noch undefiniert ist. Die oben stehende Schleife läßt sich also einfach \emph{nicht prallelisieren}. 
+
+Es sind auch nicht alle Formen von For-Schleifen erlaubt, beispielsweise muss zu Beginn der Schleife bereits feststehen, wie oft sie ausgeführt wird, damit es überhaupt möglich ist, die verschiedenen Schleifendurchlaufe auf die Threads aufzuteilen.
+
+\subsection{Barrieren}
+Erreicht ein Thread des Teams eine mit der \texttt{barrier}-Direktive definierte Barriere, wartet er darauf, bis alle anderen Threads auch diese Stelle erreicht haben:
+
+\begin{codes}[Barriere,label=code:openmp:barrier]
+#pragma omp parallel
+{
+    do_work1();
+#pragma omp barrier
+    do_work_that_depends_on_work1();
+}
+\end{codes}
+
+Sowohl hinter der \texttt{sections}-Direktive als auch hinter der \texttt{for}-Direktive befindet sich eine sogenannte \emph{impliziete Barriere}, das bedeutet, dass nach Beenden des entsprechenden Blockes mit der weiteren Ausführung auf das gesamte Threadteam gewartet wird. Mit der Klausel \texttt{nowait} kann dieses Verhalten geändert und die impliziete Barriere entfernt werden:
+
+\begin{codes}[Expliziete Barriere,label=code:openmp:nowait]
+#pragma omp parallel
+    f = 2.0;
+#pragma omp for nowait
+    for(i=0; i<n; i++) {
+        z[i] = x[i] + y[i] * f;
+    }
+#pragma omp for nowait
+    for(i=0; i<n; i++) {
+        a[i] = b[i] + c[i];
+    }
+#pragma omp barrier
+    sum = 0;
+    for(i=0; i<n; i++) {
+        sum += z[i] * a[i];
+    }
+    do_something_with(sum);
+}
+
+\end{codes}
+
+In diesem Beispiel wurde in Zeile $11$ eine expliziete Barriere eingefügt, da sonst nicht sichergestellt ist, dass die Arrays \texttt{z} und \texttt{a} schon vollständig berechnet wurden. Hier sei darauf hingewiesen, dass die Berechnung von \texttt{sum} von jedem Thread einzeln ausgeführt wird. Es wäre nun naheliegend diese Berechnung auch zu parallelisieren, dabei ist allerdings Vorsicht geboten! Mehr dazu in \ref{sec:openmp:sharedmemory}.
+
+\subsection{Shared Memory} \label{sec:openmp:sharedmemory}
+Bisher haben wir noch kein Wort dazu verloren, was beim Erreichen eines \texttt{parallel}-Blocks mit den bis dahin deklarierten Variablen geschieht. Es gibt zwei naheliegende Verhaltensweisen:
+
+\begin{description}
+\item[private Variable]  Man übergibt der Klausel \texttt{private} eine Komma-getrennte Liste von Variablen, die als ``privat'' ausgewiesen werden sollen. Jeder Thread erhält dann eine Variable von gleichem Namen und Typ. Ändert der Thread sie, sind diese Änderung nur für ihn selbst gültig. Standardmäßig sind private Variablen für jeden Thread uninitialisiert. 
+
+Möchte man sie mit dem Wert der Variablen vor dem fork initialisieren, muss man sie an die Klausel \texttt{firstprivate} übergeben (man kann sie dann auch aus der Liste von \texttt{private} weg lassen). 
+
+Bei der \texttt{for}- bzw. \texttt{sections}-Direktive gibt es eine klar definierte ``letzte Aufgabe'', nämlich den sequentiell letzten Schleifendurchlauf bzw. die lexikographisch letzte \texttt{section}. Möchte man den Wert einer privaten Variable dieser letzten Aufgabe beim Join übernehmen, muss man sie in der Variablenliste, die man an \texttt{lastprivate} übergibt, aufführen (auch hier kann die Variable aus der Liste von \texttt{private} weg gelassen werden). 
+
+\item[geteilte Variable / shared Variable] alle Threads teilen sich die gleiche Variable. Auch \texttt{shared} nimmt eine Liste von Variablen entgegen, die danach von allen Threads des Teams geteilt werden. Das Schreiben in geteilte Variablen verursacht sehr viele Probleme bei Programmierung der mit Threads und sollte so oft wie möglich vermieden werden. Details dazu siehe in \ref{sec:openmp:sharedmemoryprobleme}. 
+\end{description}
+
+Die \texttt{default}-Klausel der \texttt{parallel}-Direktive nimmt ein Argument entgegen, es ist entweder \texttt{none} oder \texttt{shared} (ist die Klausel nicht angegeben ist dies der Standard). Die Angabe von \texttt{default(shared)} bedeutet, dass Variablen, die weder expliziet als private oder geteilt ausgewiesen werden als shared Variables betrachtet werden. Gibt man hingegen \texttt{default(none)} an, so müssen Variablen die innerhalb des \texttt{parallel}-Blocks verwendet werden expliziet als ``privat'' oder ``geteilt'' ausgewiesen werden. Um versehentliches Schreiben in eine geteilte Variable zu vermeiden empfehlen wir darum immer die Angabe von \texttt{default(none)}. 
+
+Um nun die Berechnung der Summe aus Listing \ref{code:openmp:nowait} zu parallelisieren, könnte man folgenden naiven Ansatz verfolgen:
+
+\begin{codes}[Falsche Art eine Summenberechnung zu parallelisieren,label=code:openmp:wrongsum]
+sum = 0;
+#pragma omp parallel shared(sum)
+    #pragma omp for
+    for(i=0; i<n; i++) {
+        sum += z[i] * a[i]; /* BAAAD! */
+    }
+}
+\end{codes}
+
+Das Problem tritt beim Schreiben in die geteilte Variable \texttt{sum} auf: Es kann sein, dass Thread A den Wert von \texttt{sum} aus dem Speicher ließt, dann Thread B das gleiche macht. Jetzt erst addiert Thread A den Wert \texttt{z[i] * a[i]} zu \texttt{sum} und speichert ihn wieder im Speicher. Danach macht Thread B das gleiche und überschreibt den Wert, den Thread A gespeichert hat, wir haben also einen Summanden verloren. Solche Probleme lößt man im Allgemeinen mit Locks (siehe \ref{sec:openmp:locks}) oder der \texttt{ciritcal}-Direktive (siehe \ref{sec:openmp:singlemastercritical}), in diesem speziellen Fall stellt OpenMP aber eine sehr ellegante Methode zur Verfügung: die \texttt{reduction}-Klausel. Sie nimmt einen Operatoren und, mit einem Doppelpunkt davon getrennt, eine Liste von Variablen entgegen. Alle übergebenen Variablen werden als privat ausgewiesen und, je nach Operator, initialisiert. 
+
+\begin{table}[H] \centering
+\begin{tabular}{|l|l|} \hline 
+\bfseries{Operator} & \bfseries{Wert} \\\hline
+\texttt{+} & $0$ \\\hline
+\texttt{*} & $1$ \\\hline
+\texttt{-} & $0$ \\\hline
+\texttt{\&} & $\tilde\ 0$ \\\hline
+\texttt{|} & $0$ \\\hline
+\texttt{\^} & $0$ \\\hline
+\texttt{\&\&} & $1$ \\\hline
+\texttt{||} & $0$ \\\hline
+\end{tabular}
+\label{table:openmp:reductionoperatoren}
+\caption{Erlaubte Operatoren und ihre Initialisierungswerte}
+\end{table}
+
+Jeder Thread kann nun auf seine eigene Version der Variablen zugreifen und problemlos beschreiben. Nach Beendigung des entsprechenden Blockes werden dann die privaten Variablen aller Threads mit dem angegebenen Operator kombiniert. Eine notwendige Voraussetzung an den Operator muss es also sein, dass er kommutativ und assoziativ ist.
+
+\begin{codes}[Parallelisierung einer Summenberechnung,label=code:openmp:rightsum]
+sum = 0;
+#pragma omp parallel reduction(+:sum)
+    #pragma omp for
+    for(i=0; i<n; i++) {
+        sum += z[i] * a[i];
+    }
+}
+\end{codes}
+
+\subsection{single, master und critical} \label{sec:openmp:singlemastercritical}
+Ein hinter der \texttt{single}-Direktive angegebener Block wird nur von einem Thread ausgeführt. Wird die \texttt{nowait}-Klausel nicht angegeben, gibt es danach eine impliziete Barriere. 
+
+\begin{codes}[Ausführung von nur einem Thread,label=code:openmp:single]
+do_work1(); /* wird von jedem Thread ausgeführ */
+#pragma omp single
+{
+    do_work2(); /* wird nur ein einziges Mal ausgeführt */
+}
+do_work3(); /* wird wieder von jedem Thread ausgeführ */
+\end{codes}
+
+Die Direktive \texttt{master} verhält sich wie die \texttt{single}-Direktive mit folgenden Unterschieden:
+\begin{itemize}
+\item Der Thread, der die Aufgabe ausführen soll, ist immer der Master-Thread. Dies ermöglicht es beispielsweise auf den Wert einer privaten Variable über mehrere \texttt{master}-Blöcke hinweg zuzgreifen.
+\item Nach dem \texttt{master}-Block gibt es keine impliziete Barriere.
+\end{itemize}
+
+Schlussendlich ermöglicht es die \texttt{critical}-Direktive einen Block nur von exakt einem Thread \emph{gleichzeitig} auszuführen. Im Gegensatz zu \texttt{single} und \texttt{master} wird er allerdings von jedem Thread ausgeführt. Die \texttt{ciritcal}-Direktive erhält ein optionale Argument -- ihren Namen. Gibt es an unterschiedlichen Stellen \texttt{critical}-Blöcke mit dem gleichen Namen, kann immer nur eine gleichzeitig ausgeführt werden. Erreicht ein Thread den Beginn eines \texttt{critical}-Blocks, während ein Block mit dem gleichen Namen bereits ausgeführt wird, wartet er.
+
+\begin{codes}[Ausführung von nur einem Thread,label=code:openmp:critical]
+#pragma omp critical(writeinfile)
+{
+    write_data_to_file();
+}
+do_something();
+#pragma omp critical(writeinfile)
+{
+    write_data_to_file();
+}
+\end{codes}
+
+Das Argument für den Namen kann weg gelassen werden, der Block erhält dann einen Standard-Namen. Es darf also auch nur ein \texttt{critical}-Block mit dem Standard-Namen ausgeführt werden. 
+
+Code-Bereiche, die immer nur von einem Thread ausgeführt werden dürfen (wie das Schreiben in eine Datei beispielweise) nennt man \emph{kritische Bereiche}, daher auch der Name der \texttt{critical}-Direktive. Manchmal ist die Definition von kritischen Bereichen über diese Direktive allerdings nicht flexibel genug: Immerhin darf über das gesamte Programm hinweg immer nur ein einziger \texttt{critical}-Block mit dem gleichen Namen ausgeführt werden. Es ist aber auch denkbar, dass zwei Threadteams, die die gleiche Funktion aufrufen sich gegenseitig nicht behindern sollen. In solchen Situation verwendet man \emph{Locks}.
+
+\subsection{Locks} \label{sec:openmp:locks}
+Ein Lock ist eine Variable vom Typ \texttt{omp\_lock\_t}, welcher in \texttt{omp.h} definiert ist. Ein Lock hat zwei Zustände: entweder ``offen'' oder ``geschlossen'', was dafür verwendet werden kann, sehr flexible kritische Sektionen zu definieren. in \texttt{omp.h} werden dazu noch folgende Funktionen definiert:
+\begin{description}
+\item[\texttt{omp\_init\_lock(*omp\_lock\_t)}] Initialisiert eine Lock-Variable, muss vor Benutzung eines Locks aufgerufen werden. Nach Initialisierung ist eine Lock-Variable offen.
+\item[\texttt{omp\_destroy\_lock(*omp\_lock\_t)}] Zerstört eine Lock-Variable wieder, diese Funktion muss mit jeder Lock-Variablen aufgerufen werden. Vor der Zerstörung muss die Variable offen sein.
+\item[\texttt{omp\_set\_lock(*omp\_lock\_t)}] versucht eine Lock-Variable zu schließen, ist sie bereits geschlossen, so wartet der aktuelle Thread mit der Ausführung (diese Verhalten nennt man auch \emph{blocking}) bis die Variable wieder offen ist und wiederholt den Vorgang.
+\item[\texttt{omp\_unset\_lock(*omp\_lock\_t)}] öffnet die Lock-Variable. Die Lock-Variable sollte vom gleichen Thread wieder geöffnet werden, der sie auch geschlossen hat.
+\item[\texttt{omp\_test\_lock(*omp\_lock\_t)}] versucht eine Lock-Variable zu schließen. Ist sie bereits geschlossen, gibt die Funktion $0$ zurück. Ansonsten schließt sie das Lock und gibt $1$ zurück. (Diese Verhalten nennt man auch \emph{non-blocking}).
+\end{description}
+
+Eine kritische Sektion läßt sich nun beispielsweise so realisieren:
+
+\begin{codes}[Kritische Sektion mit Locks,label=code:openmp:criticalwithlocks]
+omp_lock_t write_to_file_lock;
+omp_init_lock(&write_to_file_lock);
+
+#pragma omp parallel
+{
+    do_something1();
+
+    omp_set_lock(&write_to_file_lock);
+    write_to_file();
+    omp_unset_lock(&write_to_file_lock);
+
+    do_something2();
+
+    while(!omp_test_lock(&write_to_file_lock)) {
+        do_something_else();
+    }
+    write_to_file();
+    omp_unset_lock(&write_to_file_lock);
+
+    do_something3();
+}
+omp_destroy_lock(&write_to_file_lock);
+\end{codes}
+
+%Mit \emph{Mutual exlcusions} (kurz ``Mutex'' zu deutsch ``gegenseitiges Ausschließen'') lassen sich ebenfalls kritische Bereiche realisieren.
+
+%TODO \subsection{Problem: Deadlocks}
+%TODO \subsection{Problem: Shared Memory} \label{sec:openmp:sharedmemoryprobleme}
+
+% EOF
