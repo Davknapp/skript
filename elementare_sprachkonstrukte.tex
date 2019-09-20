@@ -161,7 +161,19 @@ C-Programme setzen sich aus einer oder mehreren \df{Statements} zusammen. Wir ha
 \begin{alltt}
     \ph{EXPRESSION 1}, \ph{EXPRESSION 2}, \ldots, \ph{EXPRESSION n};
 \end{alltt}
-Dies scheint zunächst nicht besonders nützlich zu sein, da wir die einzelnen Expressions durch Semikolons auch einzeln zu Statements machen können -- im Zusammenspiel mit anderen Statements jedoch kann es sich als nützlich erweisen, mehrere Expressions als ein { \itshape einzelnes} Statement zusammenfassen zu können. In Wahrheit ist eine Expressionliste ebenfalls eine Expression: Das Komma ist ein binärer Operator \label{Op:Komma}, welcher seine beiden Argumente auswertet und den zweiten als Ergebnis liefert: Wert und Typ einer Expressionliste sind also immer Wert und Typ der letzten Expression in der Liste.
+Dies scheint zunächst nicht besonders nützlich zu sein, da wir die einzelnen Expressions durch Semikolons auch einzeln zu Statements machen können -- im Zusammenspiel mit anderen Statements jedoch kann es sich als nützlich erweisen, mehrere Expressions als ein { \itshape einzelnes} Statement zusammenfassen zu können. In Wahrheit ist eine Expressionliste ebenfalls eine Expression: Das Komma ist ein binärer Operator \label{Op:Komma}, welcher seine beiden Argumente auswertet und den zweiten als Ergebnis liefert: Wert und Typ einer Expressionliste sind also immer Wert und Typ der letzten Expression in der Liste. Dies veranschaulicht das folgende Beispiel, in dem die ungenutzten Variablen °a° und °b° verworfen werden und °i° der Wert von °c° zugewiesen wird. 
+
+\begin{codes}[Beispiel für Liste von Expressions, label=code:expressionliste]
+#include <stdio.h>
+int main() {            
+    int a=1, b=2, c=3;
+    int i = (a, b, c); 
+    printf("%i\n",i);  /* Gibt 3 aus */
+}                          
+\end{codes}
+
+
+
 
 Ein weiteres, bereits bekanntes Statement ist der \df{Block}, welcher einfach mehrere Statements zu einem Statement zusammenfasst:
 
@@ -169,7 +181,9 @@ Ein weiteres, bereits bekanntes Statement ist der \df{Block}, welcher einfach me
     \{ \ph{STATEMENT 1} \ph{STATEMENT 2} \ldots \ph{STATEMENT n} \}
 \end{alltt}
 
-Wichtig: Variablendeklarationen sind Statements, die nicht an jeder Stelle des Quellcodes verwendet werden dürfen. Variablendeklarationen müssen immer \emph{die ersten Statements eines Blocks sein}. Die Variablen, die zu Beginn eines Blocks deklariert werden, gehören in gewisser Weise zu diesem Block. Nachdem der Block endet, werden die Variablen verworfen. Darüber hinaus kann eine Variablendeklarion in einem Block eine Variable des ihn umschließenden Blocks {\itshape überdecken}: Das heißt, in einem Block können Variablen deklariert werden, die außerhalb des Blocks bereits existieren. Diese beiden Variablen repräsentieren in diesem Fall \emph{zwei unterschiedliche Speicherbereiche}, und innerhalb des Blocks können wir nur noch diejenige Variable verwenden, welche auch im Block deklariert wurde. Ein Beispiel:
+Wichtig: Variablendeklarationen sind Statements, die nicht an jeder Stelle des Quellcodes verwendet werden dürfen. Variablendeklarationen müssen immer \emph{die ersten Statements eines Blocks sein}\begin{footnote}{Seit dem C99-Standard ist dies nicht mehr unbedingt notwendig: Es reicht aus, die Variable unmittelbar vor der ersten Benutzung zu deklarieren. Beim gcc-Compiler kann man das explizit mit der Übergabe des Parameters -std=c99 sicherstellen.}\end{footnote}. 
+
+In jedem Fall gehören die Variablen, die zu Beginn eines Blocks deklariert werden, in gewisser Weise zu diesem Block: Nachdem der Block endet, werden die Variablen verworfen. Darüber hinaus kann eine Variablendeklarion in einem Block eine Variable des ihn umschließenden Blocks {\itshape überdecken}: Das heißt, in einem Block können Variablen deklariert werden, die außerhalb des Blocks bereits existieren. Diese beiden Variablen repräsentieren in diesem Fall \emph{zwei unterschiedliche Speicherbereiche}, und innerhalb des Blocks können wir nur noch diejenige Variable verwenden, welche auch im Block deklariert wurde. Ein Beispiel:
 
 
 \begin{codes}[Beispiel für Überdeckung,label=code:ueberdeckung]
@@ -265,7 +279,7 @@ weist den Computer an, zu prüfen, ob die Expression \ph{°BEDINGUNG°} ungleich °0
 while(1); /* leeres statement: tue nichts, und das für immer */
 \end{codes}
 
-Wir wollen ein Beispiel angeben, welches die Geometrische Reihe $\sum_{n=0}^\infty q^n = \frac{1}{1-q}$ ausrechnet:
+Wir wollen ein Beispiel angeben, welches die Geometrische Reihe $\sum_{n=0}^\infty q^n = \frac{1}{1-q}$ für $q=0.2$ ausrechnet:
 
 \begin{codes}[Geometrische Reihe,label=code:geometrischereihe]
 double q = 0.2;

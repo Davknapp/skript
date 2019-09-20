@@ -43,6 +43,16 @@ Außerdem bemerken wir an dieser Stelle, dass in C jeder \textit{Befehl durch ein
 int main() { printf("Hello World"); return 0; }
 \end{codes}
 
+\subsection{Ablauf beim Programmieren}
+In diesem Abschnitt möchten wir ein paar Tipps zum Ablauf des Programmierens geben. Betrachten wir dazu einmal das Flowchart in Abbildung~\ref{fig:fehlersuche}. Jedes Programm sollte sorgfältig geplant werden: Wir müssen überlegen, was zu tun ist, und wie man dies geschickt und effizient im Algorithmus umsetzen kann. Nachdem wir den Algorithmus in C gecodet haben, kompilieren wir ihn. Wenn es hier Warnungen oder Fehler gibt, müssen wir sie zunächst verstehen und beheben. Dies wiederholen wir, bis das Programm fehlerfrei und warnungsfrei kompiliert wird. Als nächstes testen wir, ob das Programm das tut, was wir erwarten. Dazu benutzen wir in der einfachsten Form verschiedene Eingabeparameter und schauen, ob die Ausgabe des Programms richtig ist. Wenn dies nicht der Fall ist, kann es Fehler in unserer Anfangsüberlegung geben und wir müssen den Algorithmus anpassen. Eventuell ist aber auch der Algorithmus korrekt und der Fehler liegt im Code (trotz fehlerfreien Kompilierens). Haben wir das eine oder andere behoben, geht es entsprechend dem Flowchart von vorne los, bis wir mir relativ großer Sicherheit sagen können, dass das Programm tut was es soll und wir fertig sind\begin{footnote}{Die Fehlersuche im Code (das Debuggen) und das Testen des Codes (Unit-Tests, System-Tests) können durch professionelle Tools sehr erleichtert werden. Sobald ihr eine größeres Softwareprojekt startet, sollten diese auch unbedingt genutzt werden. Empfehlenswert ist dann auch die Versionskontrolle mit Hilfsmitteln wie z.B.\ git.}\end{footnote}.
+
+\begin{figure}[htb]
+\centering
+\includegraphics[width=11.9cm]{flowchart}
+\caption{Ablauf beim Programmieren.}
+\label{fig:fehlersuche}
+\end{figure}
+
 \subsection{Gcc unter Windows}
 Der Compiler, mit dem wir unser Hello World - Programm und auch zukünftige Übungen in ausführbaren Maschinencode übersetzen werden, ist der C-Compiler aus der GNU Compiler Collection, welchen wir hier kurz exemplarisch einführen wollen. Er trägt den Namen \df{gcc}. Obgleich er ein sehr weit verbreiteter und gängiger Compiler ist, ist er selbstverständlich nicht der Weisheit letzter Schluss - es gibt eine Vielzahl weiterer Compiler, von denen einige leider nur käuflich zu erwerben sind.
 
