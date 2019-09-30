@@ -12,9 +12,10 @@ Strukturen werden verwendet, um mehrere, im Speicher hintereinander angeordnete 
 \end{alltt}
 
 Eine solche Strukturdefinition steht auﬂerhalb von Funktionscode meist am Anfang des Quellcodes (bzw. in der Headerdatei eines Moduls). Man kann im folgenden Code nun ∞struct ∞\ph{∞STRUKTURNAME∞} als Datentyp verwenden -- Variablen dieses Typs heiﬂen \df{Strukturen} und enthalten mehrere ``Untervariablen'', welche auch als \df{Felder} bezeichnet werden. Um auf die Felder einer Struktur zuzugreifen, verwendet man den \df{Punktoperator} \label{Op:FeldZugriff}:
-\begin{alltt}
-    \ph{STRUKTURNAME}.\ph{FELDNAME}
-\end{alltt}
+\begin{codes}
+	struct STURKTURNAME VARIABLENNAME; /*Deklaration Variablenname*/
+    VARIABLENNAME.FELDNAME;		/*Zugriff auf Feld Feldname*/
+\end{codes}
 
 Enth‰lt eine Struktur ∞X∞ ein Feld von Typ ∞T∞ mit Namen ∞y∞, so ist ∞X.y∞ die in ∞X∞ enthaltene Variable vom Typ ∞T∞. Ein Beispiel:
 

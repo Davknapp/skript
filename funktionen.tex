@@ -174,7 +174,7 @@ Die Headerdateien von selbstgeschriebenen Modulen werden durch die °#include° - 
 
 unsigned faculty(unsigned n) {
   unsigned f = 1;
-  for (;n;n--) f *= n;
+  for (;n>0;n--) f *= n;
   return f;
 }
 
